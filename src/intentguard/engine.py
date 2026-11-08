@@ -13,6 +13,7 @@ import re
 import time
 import urllib.parse
 from dataclasses import dataclass, replace
+from typing import TYPE_CHECKING
 
 from .models import (
     EGRESS_OPS,
@@ -26,6 +27,9 @@ from .models import (
     Trust,
     Verdict,
 )
+
+if TYPE_CHECKING:
+    from .semantic import SemanticJudge
 
 SECRET_RE = re.compile(
     r"(AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----"
@@ -53,6 +57,7 @@ RULE_TEXT = {
     "EGRESS-003": "The destination is denylisted",
     "TAINT-001": "The outbound content contains a secret or credential",
     "TAINT-002": "The outbound content contains data read from a sensitive file in this session",
+    "TAINT-003": "The outbound content appears to restate sensitive data read in this session",
     "SEQ-001": "Secret search followed by reading a config/credential file",
     "SEQ-002": "Sensitive data collected, then an unfamiliar destination contacted",
     "SEQ-005": "Untrusted content with instruction-like text was read earlier in this session",
@@ -77,6 +82,8 @@ class EngineConfig:
     mention_check: bool = True  # CONFIDENTIAL+ reads must be referenced by the task text
     lineage: bool = True  # outbound content that contains sensitive data read in this session
     lineage_k: int = 12  # shortest run of letters/digits that counts as a match
+    semantic: str = ""  # "" = off; "proximity" = the built-in second stage (see semantic.py). Another judge: PolicyEngine(judge=...)
+    semantic_tolerance: float = 0.08  # how close, as a fraction, a number must be to one in the sensitive text
     fingerprint_key: bytes = b""  # secret that keys the lineage hashes; set by the session store (see store.py)
     lineage_variants: bool = True  # also match sensitive numbers (digits, 120k, in words) and leetspeak
     approval_memory: bool = True  # a human approval of one recipient or file is remembered for the session
@@ -206,8 +213,15 @@ def _overlaps(views: list[str], grams: frozenset[int], k: int, numbers: bool = F
 
 
 class PolicyEngine:
-    def __init__(self, config: EngineConfig | None = None):
+    def __init__(self, config: EngineConfig | None = None, judge: SemanticJudge | None = None):
         self.cfg = config or EngineConfig()
+        if judge is None and self.cfg.semantic == "proximity":
+            from .semantic import ProximityJudge
+            judge = ProximityJudge(self.cfg.semantic_tolerance)
+        elif judge is None and self.cfg.semantic:
+            raise ValueError(f"unknown semantic stage {self.cfg.semantic!r}; use 'proximity' or pass judge=...")
+        self.judge = judge
+        self.judge_errors = 0  # judge calls that failed; the stage then adds nothing, as if it were off
 
     def set_fingerprint_key(self, key: bytes) -> None:
         """Key the lineage hashes. Call before any session reads sensitive data: hashes made with another key never match."""
@@ -244,6 +258,9 @@ class PolicyEngine:
 
     def remember(self, s: Session, output: object, cls: Classification) -> None:
         """Keep a fingerprint of sensitive data the session has read, to recognise it on the way out."""
+        if self.judge is not None:  # readable text, in memory only: never written to the session store
+            s.sources.append(str(output)[:4000])
+            del s.sources[:-20]
         if self.cfg.lineage:
             key = self.cfg.fingerprint_key
             grams = _grams(str(output), self.cfg.lineage_k, key)
@@ -337,6 +354,15 @@ class PolicyEngine:
                     top = max(hit)
                     fire("TAINT-002", Verdict.BLOCK if top >= Classification.SECRET else Verdict.REVIEW, 0.3,
                          f"matches {top.name} data read earlier", "no sensitive content")
+            if self.judge is not None and s.sources and req.trust != Trust.LOCAL and not any(
+                    f[0] in ("TAINT-001", "TAINT-002") for f in fired):
+                try:  # only ever adds a finding, only to ask a person; a failing judge changes nothing
+                    reason = self.judge.disclosed(text, s.sources)
+                except Exception:
+                    self.judge_errors += 1
+                    reason = None
+                if reason:
+                    fire("TAINT-003", Verdict.REVIEW, 0.25, reason, "no restated sensitive content")
 
         # shell allowlist
         if req.op == Op.EXEC:

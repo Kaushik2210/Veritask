@@ -42,7 +42,7 @@ function Code({ title, text }: { title: string; text: string }) {
 }
 
 const GAPS = [
-  ["Reworded facts", "Reworded facts get through.", "A rounded figure, another language, slang, or a comparison with no numbers is not recognised. 5 of 14 attacks in the newest set are known misses."],
+  ["Reworded facts", "Reworded facts get through by default.", "A rounded figure, another language, slang, or a comparison with no numbers is not recognised: 5 of 14 attacks in the newest set are known misses. An optional second stage (a built-in number reader, or a local model behind it) sends many of these to a person; it is off by default and measured in F31."],
   ["Split secrets", "The first short piece can leave.", "A secret sent in pieces is caught once the whole becomes recognisable, as the replay shows. The first short piece has already gone."],
   ["Evidence", "No independent test yet.", "Every attack set shares an author with the engine. An outside set is the next step for the evidence."],
   ["Friction", "Some legitimate work waits for a person.", "About 4.5% of steps on the held-out generated set go to a human, and a legitimate email that repeats a sensitive number will too."],

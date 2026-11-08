@@ -52,7 +52,7 @@ and a reviewed lock-out (see F25 and F26).
 
 Not done: an independent (non-author) episode set, LlamaFirewall AlignmentCheck (needs an external LLM),
 comparison runs of the real Progent, The Task Shield or CaMeL (only stand-ins for the first two, F27), verified network-level isolation (Docker draft untested), OPA backend,
-Postgres/Redis, MCP resources/prompts/SSE streaming. Known open weaknesses: paraphrased or substituted (numbers and leetspeak are now matched, F29; reworded facts are not)
+Postgres/Redis, MCP resources/prompts/SSE streaming. Known open weaknesses: paraphrased or substituted (numbers and leetspeak are matched, F29; reworded facts only by the optional second stage, F31)
 exfiltration, split secrets whose first piece is short, review friction on legitimate tasks, and a session that
 is locked out after one blocked attempt (F16 to F18, F24 to F26).
 
@@ -61,7 +61,29 @@ an author, and several weaknesses are documented there (F2, F5 to F26). `python 
 the results; run it with `.venv-lf/Scripts/python` (Hugging Face access to Llama Prompt Guard 2 needed) to
 include the LlamaFirewall rows. `docs/literature-review.md` and the spreadsheets next to it hold the
 literature survey; `docs/mcp-demo.md` walks through the MCP gateway with the dashboard. Tests:
-`python -m pytest -q` (171 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
+`python -m pytest -q` (199 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
+
+## Optional semantic stage
+
+The lineage check misses facts that are reworded: a rounded figure, a number in another language, a comparison. An optional second stage
+asks a judge whether an outgoing message restates anything the session read, and sends the action to a person (rule TAINT-003) if so.
+It never blocks and it can never clear a finding the rules already made. Off by default.
+
+```toml
+[engine]
+semantic = "proximity"        # built in: numbers in 5 languages and "grand", within 8% of one in the sensitive text
+```
+
+```python
+from intentguard import EngineConfig, PolicyEngine
+from intentguard.semantic import CombinedJudge, OllamaJudge, ProximityJudge
+
+engine = PolicyEngine(EngineConfig(), judge=CombinedJudge(ProximityJudge(), OllamaJudge("qwen2.5:7b")))  # a model on this machine
+```
+
+On rt5 it cuts harmful steps that run from 100% to 41.7% with the built-in judge and to 8.3% with a 7B local model behind it, at the cost of
+sending two benign replies that contain a nearby number to a person. The model figures are one run of 18 messages (`python -m
+bench.semantic_ollama --model qwen2.5:7b --engine`); read F31 for the caveats, including that the judge reads attacker-controlled text.
 
 ## Showcase site
 

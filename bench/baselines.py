@@ -200,6 +200,7 @@ SYSTEMS = {
     "intentguard_full": lambda: PolicyEngine(EngineConfig()),
     "ablate_no_mention_check": lambda: PolicyEngine(EngineConfig(mention_check=False)),
     "ablate_no_cross_session": lambda: PolicyEngine(EngineConfig(cross_session=False)),
+    "intentguard_semantic": lambda: PolicyEngine(EngineConfig(semantic="proximity")),
     "ablate_no_lineage": lambda: PolicyEngine(EngineConfig(lineage=False)),
     "ablate_no_lineage_variants": lambda: PolicyEngine(EngineConfig(lineage_variants=False)),
     "variant_risk_cap_0.3": lambda: PolicyEngine(EngineConfig(action_risk_cap=0.3)),

@@ -114,5 +114,6 @@ class Session:
     caps: Capabilities = field(default_factory=Capabilities)
     outbound: str = ""  # recent outbound text, so a secret split across several sends is still seen
     lineage: list = field(default_factory=list)  # (classification, 64-bit fingerprints of n-grams) of sensitive content read here
+    sources: list = field(default_factory=list)  # readable text of sensitive reads, for a semantic judge; in memory only, never persisted
     approved: set = field(default_factory=set)  # (rule, key) pairs a human approved in this session
     closed: bool = False  # an administrator ended this session; every further call is blocked
