@@ -98,6 +98,7 @@ M0 scaffold and threat model, M1 mock tools plus gateway passthrough plus bypass
 
 | Module | What it adds |
 |---|---|
+| `canon.py` | cleans paths and addresses so the policy judges what the tool will act on (case, Unicode, trailing dots, NUL, encodings, URL hosts); rule INPUT-001 (F32) |
 | `store.py` | SQLite persistence of sessions, per-agent memory and lineage; lineage hashes are keyed with `<db>.key` (F28, F30) |
 | `sdk.py` | `Guard`: decorate your own Python functions, open a session per task, give the agent only the session |
 | `report.py` | `intentguard report`: readable per-session summary of an audit log, non-zero exit if the chain is broken |

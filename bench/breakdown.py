@@ -13,12 +13,13 @@ from bench.redteam2 import build_rt_dev, build_rt_heldout  # noqa: E402
 from bench.redteam3 import build_rt3_dev, build_rt3_heldout  # noqa: E402
 from bench.redteam4 import build_rt4  # noqa: E402
 from bench.redteam5 import build_rt5  # noqa: E402
+from bench.redteam6 import build_rt6  # noqa: E402
 from bench.run import run_system  # noqa: E402
 
 
 def main(system: str = "intentguard_full") -> None:
     for name, build in (("rt_dev", build_rt_dev), ("rt_heldout", build_rt_heldout),
-                        ("rt3_dev", build_rt3_dev), ("rt3_heldout", build_rt3_heldout), ("rt4_variants", build_rt4), ("rt5_semantic", build_rt5)):
+                        ("rt3_dev", build_rt3_dev), ("rt3_heldout", build_rt3_heldout), ("rt4_variants", build_rt4), ("rt5_semantic", build_rt5), ("rt6_spelling", build_rt6)):
         rows = run_system(system, build())
         by = defaultdict(lambda: [0, 0, 0, 0])  # harmful steps, executed, clean steps, clean blocked/reviewed
         for r in rows:

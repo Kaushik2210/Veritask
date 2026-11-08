@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import posixpath
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
 from .audit import AuditLog
+from .canon import SUSPICIOUS, clean_destination, clean_path, domain_chain, fold
 from .engine import PolicyEngine
 from .models import (
     ActionRequest,
@@ -54,15 +54,30 @@ class Catalog:
         return self.tables.get(table.lower(), Classification.INTERNAL)
 
     def classify(self, resource: str) -> Classification:
-        return self.classes.get(resource, Classification.INTERNAL)  # unknown -> not public
+        """Case-insensitive, like most file systems; an unknown resource is INTERNAL, never public."""
+        key = fold(resource)
+        for name, cls in self.classes.items():
+            if fold(name) == key:
+                return cls
+        return Classification.INTERNAL
 
     def trust_of(self, dest: str) -> Trust:
-        return self.trust.get(dest, Trust.UNKNOWN)
+        """Trust of an address or host, compared in its cleaned form. A denylisted domain also covers its addresses and subdomains."""
+        key = clean_destination(dest)[0]
+        known = {clean_destination(k)[0]: v for k, v in self.trust.items()}
+        if key in known:
+            return known[key]
+        if any(known.get(k) == Trust.DENYLISTED for k in domain_chain(key)[1:]):
+            return Trust.DENYLISTED
+        local, at, domain = key.rpartition("@")
+        if at and "+" in local and known.get(local.split("+", 1)[0] + "@" + domain) == Trust.DENYLISTED:
+            return Trust.DENYLISTED  # attacker+tag@evil.example is attacker@evil.example
+        return Trust.UNKNOWN
 
 
 def canonical(path: str) -> str:
-    """Normalise before any policy check so 'research/../hr/x' is judged as 'hr/x'."""
-    return posixpath.normpath(str(path).replace("\\", "/"))
+    """Normalise before any policy check so 'research/../hr/x' is judged as 'hr/x' (see canon.clean_path)."""
+    return clean_path(path)[0]
 
 
 class Gateway:
@@ -132,19 +147,26 @@ class Gateway:
             # models often fill an optional file argument with "" or "null"; drop it so "." or "null" is not
             # judged as a path (found when the gateway blocked legitimate emails with attachment="")
             args = {k: v for k, v in args.items() if k != tool.resource_arg}
+        flags: list[str] = []
         if tool.resource_arg and args.get(tool.resource_arg) is not None:
-            args = {**args, tool.resource_arg: canonical(args[tool.resource_arg])}
-        res = args.get(tool.resource_arg) if tool.resource_arg else None
+            clean, f = clean_path(args[tool.resource_arg])  # the tool receives the path that was judged
+            args, flags = {**args, tool.resource_arg: clean}, flags + f
+        res = fold(args[tool.resource_arg]) if tool.resource_arg and args.get(tool.resource_arg) is not None else None
         if tool.op == Op.EXEC:  # files named inside a shell command are resources too
-            paths = [canonical(w) for w in str(args.get("cmd", "")).split()[1:]
+            found = [clean_path(w) for w in str(args.get("cmd", "")).split()[1:]
                      if not w.startswith("-") and ("/" in w or "." in w)]
-            if paths:
-                res = max(paths, key=self.catalog.classify)
-        dest = args.get(tool.dest_arg) if tool.dest_arg else None
+            if found:
+                flags += [x for _, f in found for x in f]
+                res = fold(max((p for p, _ in found), key=self.catalog.classify))
+        dest = None
+        if tool.dest_arg and args.get(tool.dest_arg) is not None:
+            dest, value, f = clean_destination(args[tool.dest_arg])
+            args, flags = {**args, tool.dest_arg: value}, flags + f
         req = ActionRequest(
             session_id, s.agent_id, tool.name, tool.op, resource=res,
             classification=self.catalog.classify(res) if res else Classification.PUBLIC,
-            destination=dest, trust=self.catalog.trust_of(dest) if dest else None, args=args)
+            destination=dest, trust=self.catalog.trust_of(dest) if dest else None, args=args,
+            flags=sorted(set(flags) & SUSPICIOUS))
         if tool.op == Op.QUERY:  # classify the tables a query touches, not just the tool
             req.tables = self._tables(str(args.get("sql", "")))
             if req.tables:

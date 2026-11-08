@@ -75,6 +75,7 @@ class ActionRequest:
     trust: Trust | None = None
     tables: list[str] = field(default_factory=list)
     args: dict = field(default_factory=dict)
+    flags: list[str] = field(default_factory=list)  # spellings the gateway found suspicious (see canon.py)
     action_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     ts: float = field(default_factory=time.time)
 

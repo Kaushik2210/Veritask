@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 
+from .canon import clean_destination, fold
 from .models import Classification, Op, TaskScope
 
 _VERBS = [
@@ -34,9 +35,9 @@ def compile_scope(task: str, grants: dict) -> TaskScope:
     return TaskScope(
         task_text=task,
         allowed_ops=ops & granted,
-        allowed_resources=list(grants.get("resources", [])),
-        allowed_destinations=list(grants.get("destinations", [])),
+        allowed_resources=[fold(r) for r in grants.get("resources", [])],  # compared case-insensitively
+        allowed_destinations=[clean_destination(d)[0] for d in grants.get("destinations", [])],
         max_classification=Classification[grants.get("max_classification", "INTERNAL")],
-        project_root=grants.get("project_root"),
+        project_root=fold(grants["project_root"]) if grants.get("project_root") else None,
         confidence=confidence,
     )

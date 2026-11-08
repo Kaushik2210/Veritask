@@ -71,6 +71,7 @@ export const STAGES = [
 
 /** Which check a rule belongs to. */
 export function stageOf(ruleId: string): number {
+  if (ruleId.startsWith("INPUT")) return 0;
   if (ruleId === "SCOPE-003" || ruleId === "SCOPE-005" || ruleId === "SCOPE-004") return 1;
   if (ruleId.startsWith("SCOPE") || ruleId.startsWith("PERM")) return 0;
   if (ruleId.startsWith("EGRESS")) return 2;
