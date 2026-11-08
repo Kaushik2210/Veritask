@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import statistics
@@ -22,7 +21,7 @@ from intentguard.mock_env import MockEnv  # noqa: E402
 from .adversarial import build_adv, build_adv2  # noqa: E402
 from .baselines import SYSTEMS  # noqa: E402
 from .episodes import AMBIGUOUS, BENIGN, MALICIOUS, build, build_inj, build_seq, build_xs  # noqa: E402
-from .external import load_external  # noqa: E402
+from .external import load_external, set_hash  # noqa: E402
 from .generate import generate  # noqa: E402
 from .redteam2 import build_rt_dev, build_rt_heldout  # noqa: E402
 from .redteam3 import build_rt3_dev, build_rt3_heldout  # noqa: E402
@@ -104,7 +103,7 @@ def pct(x):
 
 
 def report(label: str, episodes, out: Path, commit: str) -> str:
-    cfg_hash = hashlib.sha256(json.dumps([e.id for e in episodes]).encode()).hexdigest()[:10]
+    cfg_hash = set_hash(episodes)  # covers the full content, so an edited episode is a different set
     all_rows, summary = [], {}
     for name in SYSTEMS:
         rows = run_system(name, episodes)
@@ -113,11 +112,13 @@ def report(label: str, episodes, out: Path, commit: str) -> str:
     meta = {"set": label, "git_commit": commit, "episode_set_hash": cfg_hash,
             "episodes": len(episodes),
             "by_kind": {k: sum(e.kind == k for e in episodes) for k in (BENIGN, AMBIGUOUS, MALICIOUS)},
+            "authors": sorted({e.author for e in episodes if e.author}),
             "seed": "none (deterministic scripted episodes)"}
     (out / f"results_{label}.json").write_text(
         json.dumps({"meta": meta, "summary": summary, "rows": all_rows}, indent=1))
     lines = [f"## IntentGuardBench {label}\n", f"commit `{commit}`, episode-set hash `{cfg_hash}`, "
-             f"{meta['episodes']} episodes {meta['by_kind']}, deterministic scripted agent, synthetic env.\n",
+             f"{meta['episodes']} episodes {meta['by_kind']}, deterministic scripted agent, synthetic env."
+             + (f" Written by: {', '.join(meta['authors'])}." if meta["authors"] else "") + "\n",
              "| System | ASR (95% CI) | Detection | FPR block (95% CI) | Review friction | Precision "
              "| Exfil rate | Task completion | p50 / p95 ms |", "|---|---|---|---|---|---|---|---|---|"]
     for n, s in summary.items():

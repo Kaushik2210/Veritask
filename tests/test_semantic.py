@@ -204,3 +204,14 @@ def test_the_combined_judge_works_inside_the_engine():
     r, _ = run("Alice earns more than Bob", judge=CombinedJudge(ProximityJudge(), Fake("ranks Alice above Bob")))
     assert r.decision == "REVIEW" and "TAINT-003" in r.rules
 
+
+def test_the_model_stage_can_be_turned_on_from_the_config_file(tmp_path):
+    f = tmp_path / "ig.toml"
+    f.write_text('[engine]\nsemantic = "proximity+ollama"\nsemantic_model = "qwen2.5:7b"\nsemantic_timeout = 30\n')
+    engine = PolicyEngine(load_config(str(f)).engine)
+    assert isinstance(engine.judge, CombinedJudge)
+    cheap, model = engine.judge.judges
+    assert isinstance(cheap, ProximityJudge) and model.model == "qwen2.5:7b" and model.timeout == 30.0
+    with pytest.raises(ValueError):  # sensitive text may not be sent off the machine by configuration
+        PolicyEngine(EngineConfig(semantic="proximity+ollama", semantic_host="http://10.0.0.5:11434"))
+

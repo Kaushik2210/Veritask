@@ -182,6 +182,16 @@ export default function Page() {
                 </Reveal>
               ))}
             </div>
+            <div className="panel pad" style={{ marginTop: 28, maxWidth: 760 }}>
+              <h3>Think you can beat it?</h3>
+              <p className="muted" style={{ marginTop: 8 }}>
+                Every test so far was written by the person who built the engine. An independent set is the most useful thing anyone can add. You do not need to program:
+                write a few short scenarios in a plain-text file, and a checker tells you what is wrong. Please write them before trying them.
+              </p>
+              <div className="cta" style={{ marginTop: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <a className="btn primary" href={`${data.repo}/blob/master/docs/contributing-episodes.md`}>Write an attack</a>
+              </div>
+            </div>
             <p className="small muted" style={{ marginTop: 22 }}>
               The full list, with the measurements behind each, is in <a href={`${data.repo}/blob/master/docs/findings.md`}>docs/findings.md</a>.
             </p>

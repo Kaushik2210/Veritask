@@ -50,7 +50,7 @@ harnesses that run real local Ollama models as agents, directly and through the 
 Experiments that are built but off by default because they did not pay for themselves: a per-action risk cap
 and a reviewed lock-out (see F25 and F26).
 
-Not done: an independent (non-author) episode set, LlamaFirewall AlignmentCheck (needs an external LLM),
+Not done: an independent (non-author) episode set (the tooling is ready: plain-text episode cards, a checker and a guide, `docs/contributing-episodes.md`), LlamaFirewall AlignmentCheck (needs an external LLM),
 comparison runs of the real Progent, The Task Shield or CaMeL (only stand-ins for the first two, F27), verified network-level isolation (Docker draft untested), OPA backend,
 Postgres/Redis, MCP resources/prompts/SSE streaming. Known open weaknesses: paraphrased or substituted (numbers and leetspeak are matched, F29; reworded facts only by the optional second stage, F31)
 exfiltration, split secrets whose first piece is short, review friction on legitimate tasks, and a session that
@@ -61,7 +61,7 @@ an author, and several weaknesses are documented there (F2, F5 to F26). `python 
 the results; run it with `.venv-lf/Scripts/python` (Hugging Face access to Llama Prompt Guard 2 needed) to
 include the LlamaFirewall rows. `docs/literature-review.md` and the spreadsheets next to it hold the
 literature survey; `docs/mcp-demo.md` walks through the MCP gateway with the dashboard. Tests:
-`python -m pytest -q` (199 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
+`python -m pytest -q` (220 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
 
 ## Optional semantic stage
 

@@ -82,8 +82,11 @@ class EngineConfig:
     mention_check: bool = True  # CONFIDENTIAL+ reads must be referenced by the task text
     lineage: bool = True  # outbound content that contains sensitive data read in this session
     lineage_k: int = 12  # shortest run of letters/digits that counts as a match
-    semantic: str = ""  # "" = off; "proximity" = the built-in second stage (see semantic.py). Another judge: PolicyEngine(judge=...)
+    semantic: str = ""  # "" = off; "proximity" = built-in number reader; "proximity+ollama" = that, then a local model (semantic.py)
     semantic_tolerance: float = 0.08  # how close, as a fraction, a number must be to one in the sensitive text
+    semantic_model: str = "llama3.2:3b"  # for "proximity+ollama": the model to ask
+    semantic_host: str = "http://127.0.0.1:11434"  # for "proximity+ollama": must be this machine unless you edit the code
+    semantic_timeout: float = 20.0  # seconds to wait for the model before treating it as unavailable
     fingerprint_key: bytes = b""  # secret that keys the lineage hashes; set by the session store (see store.py)
     lineage_variants: bool = True  # also match sensitive numbers (digits, 120k, in words) and leetspeak
     approval_memory: bool = True  # a human approval of one recipient or file is remembered for the session
@@ -215,11 +218,14 @@ def _overlaps(views: list[str], grams: frozenset[int], k: int, numbers: bool = F
 class PolicyEngine:
     def __init__(self, config: EngineConfig | None = None, judge: SemanticJudge | None = None):
         self.cfg = config or EngineConfig()
-        if judge is None and self.cfg.semantic == "proximity":
-            from .semantic import ProximityJudge
+        if judge is None and self.cfg.semantic in ("proximity", "proximity+ollama"):
+            from .semantic import CombinedJudge, OllamaJudge, ProximityJudge
             judge = ProximityJudge(self.cfg.semantic_tolerance)
+            if self.cfg.semantic == "proximity+ollama":
+                judge = CombinedJudge(judge, OllamaJudge(self.cfg.semantic_model, self.cfg.semantic_host,
+                                                         self.cfg.semantic_timeout))
         elif judge is None and self.cfg.semantic:
-            raise ValueError(f"unknown semantic stage {self.cfg.semantic!r}; use 'proximity' or pass judge=...")
+            raise ValueError(f"unknown semantic stage {self.cfg.semantic!r}; use 'proximity', 'proximity+ollama' or pass judge=...")
         self.judge = judge
         self.judge_errors = 0  # judge calls that failed; the stage then adds nothing, as if it were off
 

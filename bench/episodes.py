@@ -30,6 +30,7 @@ class Episode:
     task: str
     grants: dict
     steps: list[Step] = field(default_factory=list)
+    author: str = ""   # who wrote it; required for externally written episodes
 
 
 def SI(tool, **args):
