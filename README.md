@@ -37,7 +37,7 @@ and restored on restart: risk, restrictions, closed state, approvals and the fin
 
 ## Status (research prototype)
 
-Implemented: deterministic policy engine (task scope, taint/egress, content lineage of sensitive data, input canonicalisation of paths and addresses (F32),
+Implemented: deterministic policy engine (task scope, taint/egress, content lineage of sensitive data, input canonicalisation of paths and addresses (F32), whole-command shell and SQL checks (F33),
 sequence risk, injection-aware output scan, dynamic permission reduction, cross-session risk carry-over,
 database table classification, session approval memory), hash-chained audit log, approval queue, FastAPI
 service with agent/admin bearer tokens, Next.js dashboard with session admin (release and close), a config file and the `intentguard`
@@ -61,7 +61,7 @@ an author, and several weaknesses are documented there (F2, F5 to F26). `python 
 the results; run it with `.venv-lf/Scripts/python` (Hugging Face access to Llama Prompt Guard 2 needed) to
 include the LlamaFirewall rows. `docs/literature-review.md` and the spreadsheets next to it hold the
 literature survey; `docs/mcp-demo.md` walks through the MCP gateway with the dashboard. Tests:
-`python -m pytest -q` (276 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
+`python -m pytest -q` (323 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
 
 ## Optional semantic stage
 

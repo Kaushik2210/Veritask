@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import fnmatch
 import re
+import shlex
+import unicodedata
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -73,6 +76,22 @@ class Catalog:
         if at and "+" in local and known.get(local.split("+", 1)[0] + "@" + domain) == Trust.DENYLISTED:
             return Trust.DENYLISTED  # attacker+tag@evil.example is attacker@evil.example
         return Trust.UNKNOWN
+
+
+_WRITE_SQL = re.compile(r"\b(drop|delete|truncate|alter|update|insert|create|grant|revoke|merge|attach|detach|pragma|vacuum|"
+                        r"copy|call|exec|execute|load_extension)\b|\binto\s+(outfile|dumpfile)\b|\bload\s+data\b", re.I)
+
+
+def _argv_words(cmd: str) -> list[str]:
+    """Words after the command name, read the way a POSIX shell reads them (quotes removed) and also by plain splitting,
+    so a quoted trick such as research/"../hr/x" and a Windows path with backslashes are both seen."""
+    words: list[str] = []
+    try:
+        words += shlex.split(cmd)[1:]
+    except ValueError:
+        pass
+    words += [w.strip("\"'") for w in cmd.split()[1:]]
+    return list(dict.fromkeys(words))
 
 
 def canonical(path: str) -> str:
@@ -153,11 +172,11 @@ class Gateway:
             args, flags = {**args, tool.resource_arg: clean}, flags + f
         res = fold(args[tool.resource_arg]) if tool.resource_arg and args.get(tool.resource_arg) is not None else None
         if tool.op == Op.EXEC:  # files named inside a shell command are resources too
-            found = [clean_path(w) for w in str(args.get("cmd", "")).split()[1:]
+            found = [clean_path(w) for w in _argv_words(str(args.get("cmd", "")))
                      if not w.startswith("-") and ("/" in w or "." in w)]
             if found:
                 flags += [x for _, f in found for x in f]
-                res = fold(max((p for p, _ in found), key=self.catalog.classify))
+                res = self._judged_path([p for p, _ in found], s.scope.allowed_resources)
         dest = None
         if tool.dest_arg and args.get(tool.dest_arg) is not None:
             dest, value, f = clean_destination(args[tool.dest_arg])
@@ -168,11 +187,12 @@ class Gateway:
             destination=dest, trust=self.catalog.trust_of(dest) if dest else None, args=args,
             flags=sorted(set(flags) & SUSPICIOUS))
         if tool.op == Op.QUERY:  # classify the tables a query touches, not just the tool
-            req.tables = self._tables(str(args.get("sql", "")))
+            sql = unicodedata.normalize("NFKC", str(args.get("sql", "")))  # judged in this form; the tool still gets the original
+            req.tables = self._tables(sql)
             if req.tables:
                 req.classification = max(self.catalog.table_class(t) for t in req.tables)
-            if re.search(r"\b(drop|delete|truncate|alter|update|insert)\b", str(args.get("sql", "")), re.I):
-                req.op = Op.WRITE  # a destructive statement is a write, not a read-only query
+            if _WRITE_SQL.search(sql):
+                req.op = Op.WRITE  # a statement that changes data, opens another database or runs code is a write, not a query
         try:
             d = self.engine.evaluate(req, s)
         except Exception as exc:  # fail closed on engine error
@@ -189,6 +209,13 @@ class Gateway:
         if d.decision == Verdict.REVIEW:
             self.pending[req.action_id] = (s, tool, args, req.classification, req, d)
         return Result(d)
+
+    def _judged_path(self, paths: list[str], grants: list[str]) -> str:
+        """The one path a multi-path command is judged on: a path outside the grants if there is one (so no allowed path
+        hides it), otherwise the most sensitive."""
+        folded = [fold(p) for p in paths]
+        outside = [p for p in folded if not any(fnmatch.fnmatch(p, g) for g in grants)]
+        return max(outside or folded, key=self.catalog.classify)
 
     def _tables(self, sql: str) -> list[str]:
         """Tables a query touches. Comments, string literals and quoting are stripped first; a table is

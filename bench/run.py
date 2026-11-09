@@ -28,6 +28,7 @@ from .redteam3 import build_rt3_dev, build_rt3_heldout  # noqa: E402
 from .redteam4 import build_rt4  # noqa: E402
 from .redteam5 import build_rt5  # noqa: E402
 from .redteam6 import build_rt6  # noqa: E402
+from .redteam7 import build_rt7  # noqa: E402
 
 
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -144,7 +145,7 @@ def main() -> None:
             ("adversarial2", build_adv2()), ("injection_text", build_inj()), ("xsession_db", build_xs()),
             ("rt_dev", build_rt_dev()), ("rt_heldout", build_rt_heldout()),
             ("rt3_dev", build_rt3_dev()), ("rt3_heldout", build_rt3_heldout()), ("rt4_variants", build_rt4()), ("rt5_semantic", build_rt5()),
-            ("rt6_spelling", build_rt6())]
+            ("rt6_spelling", build_rt6()), ("rt7_shell_sql", build_rt7())]
     external = load_external()
     if external:  # independent episodes written by someone else, dropped in bench/external/
         sets.append(("external_independent", external))

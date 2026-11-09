@@ -10,6 +10,7 @@ import codecs
 import fnmatch
 import hashlib
 import re
+import shlex
 import time
 import urllib.parse
 from dataclasses import dataclass, replace
@@ -41,6 +42,8 @@ INJ_RE = re.compile(
     r"|disregard (the )?(user|above)|do not (tell|inform) the user|without telling the user"
     r"|forward the full|send all documents)", re.I)
 SHELL_ALLOW = {"ls", "cat", "echo", "pwd", "head", "wc"}
+# ; & | (chaining, pipes, background), < > (redirects), backtick and $( ${ $NAME (substitution, expansion), newline
+SHELL_META = re.compile(r"[;&|<>`\n\r]|\$[({A-Za-z_]")
 
 RULE_TEXT = {
     "PERM-002": "External network access has been disabled for this session",
@@ -64,6 +67,7 @@ RULE_TEXT = {
     "SEQ-005": "Untrusted content with instruction-like text was read earlier in this session",
     "SEQ-004": "Repeated denied attempts in one session",
     "EXEC-001": "The shell command is not on the allowlist",
+    "EXEC-002": "The shell command chains, redirects, substitutes or expands other commands or variables",
     "RISK-001": "Cumulative session risk reached the quarantine threshold",
 }
 
@@ -377,9 +381,17 @@ class PolicyEngine:
 
         # shell allowlist
         if req.op == Op.EXEC:
-            parts = str(req.args.get("cmd", "")).split()
+            cmd = str(req.args.get("cmd", ""))
+            try:
+                parts = shlex.split(cmd)
+            except ValueError:  # unbalanced quotes: a shell would read it some other way
+                parts = []
+                fire("EXEC-002", Verdict.BLOCK, 0.25, cmd, "a simple command")
+            else:
+                if SHELL_META.search(cmd):  # the allowlist judges one command; operators would add others
+                    fire("EXEC-002", Verdict.BLOCK, 0.25, cmd, "a simple command")
             if not parts or parts[0] not in SHELL_ALLOW:
-                fire("EXEC-001", Verdict.BLOCK, 0.2, str(req.args.get("cmd", "")))
+                fire("EXEC-001", Verdict.BLOCK, 0.2, cmd)
 
         # multi-step behaviour
         if cfg.behaviour:
