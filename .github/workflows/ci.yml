@@ -12,8 +12,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # node 22.18 or newer runs web/src/lib/lineage.ts directly, which the TypeScript-port parity test needs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - run: pip install -e .[dev]
-      - run: ruff check src tests bench
+      - run: ruff check src tests bench site
       - run: pytest -q
       - run: python -m bench.run
 
@@ -30,4 +34,21 @@ jobs:
           cache: npm
           cache-dependency-path: dashboard/package-lock.json
       - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
       - run: npm run build

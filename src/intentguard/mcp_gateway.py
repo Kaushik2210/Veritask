@@ -91,6 +91,13 @@ class McpGateway:
         method, mid = msg.get("method"), msg.get("id")
         if mid is None:  # notification: no response
             return None
+        if not isinstance(mid, (str, int, float)) or isinstance(mid, bool) or (isinstance(mid, str) and len(mid) > 256):
+            return self._err(None, -32600, "invalid request: id must be a short string or a number")
+        if msg.get("jsonrpc") != "2.0":
+            return self._err(mid, -32600, "invalid request: jsonrpc must be \"2.0\"")
+        params = msg.get("params")
+        if params is not None and not isinstance(params, dict):
+            return self._err(mid, -32602, "invalid params: params must be an object")
         try:
             if method == "initialize":
                 want = (msg.get("params") or {}).get("protocolVersion")
@@ -107,10 +114,14 @@ class McpGateway:
                 p = msg.get("params") or {}
                 if not isinstance(p.get("name"), str):
                     return self._err(mid, -32602, "tools/call needs a tool name")
-                return self._ok(mid, self._call(p["name"], p.get("arguments") or {}))
+                arguments = p.get("arguments")
+                if arguments is not None and not isinstance(arguments, dict):
+                    return self._err(mid, -32602, "invalid params: arguments must be an object")
+                return self._ok(mid, self._call(p["name"], arguments or {}))
             return self._err(mid, -32601, f"method not found: {method}")
-        except Exception as exc:  # never leave a request unanswered
-            return self._err(mid, -32603, f"internal error: {exc}")
+        except Exception as exc:  # never leave a request unanswered, and never describe the internals to the client
+            print(f"intentguard: internal error handling {method!r}: {type(exc).__name__}: {exc}", file=sys.stderr)
+            return self._err(mid, -32603, "internal error")
 
     def _call(self, name: str, args: dict) -> dict:
         res = self.session.call(name, **args)
@@ -132,6 +143,10 @@ class McpGateway:
         for line in stdin:
             line = line.strip()
             if not line:
+                continue
+            if len(line) > MAX_BODY:  # the same cap as the HTTP transport
+                stdout.write(json.dumps(self._err(None, -32600, "request too large")) + "\n")
+                stdout.flush()
                 continue
             try:
                 msg = json.loads(line)

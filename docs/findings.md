@@ -915,3 +915,20 @@ raise its own risk or fill the audit log. Findings here come from a probe by the
 
 **Measured.** No benchmark number changed (every earlier set is identical to the digit): the benchmark calls tools with well-formed arguments,
 so it could not have shown these. They are covered by 30 new tests instead (`tests/test_service_hardening.py`).
+
+## F35. A closed session's waiting actions could still be approved and run; the MCP gateway accepted malformed requests
+
+A fourth probe, of the approval flow and the MCP protocol layer:
+
+- **Approving after a close ran the action.** An administrator closes a session to stop it, but an action that session had already sent for human review stayed
+  in the queue, and approving it ran the tool (an email went out) after the close. Now closing a session cancels everything it was waiting on (audited as
+  `cancelled`), and an approval that races the close is refused with a `SessionClosed` error (HTTP 409) and audited as `approval_refused`.
+- **Malformed MCP requests were answered as internal errors, with the exception text.** `arguments` or `params` that were not objects, an `id` that was an object,
+  a list or a boolean, and a missing `"jsonrpc": "2.0"` all got `-32603` with Python internals in the message, or were accepted. They now get `-32600` or `-32602`,
+  internal errors say only "internal error" to the client (the detail goes to the operator's stderr), and an oversize stdio line is refused with `-32600` like the HTTP transport.
+- A negative `offset` on `/audit` is clamped to zero.
+
+**Checked and fine.** Approving the same action twice runs it once. A burst of 2,000 review-needing calls did not grow the pending queue (risk quarantines the session
+after a few), so it is not an unbounded-memory path at the default settings; with `lockout_review` on, which turns lock-outs into reviews, a cap on pending actions per session would be needed.
+
+**Measured.** No benchmark number changed. 20 new tests (`tests/test_state_and_protocol.py`). Same caveat as F34: a probe by the engine's author, not an audit.

@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 
 from ..audit import AuditLog
 from ..engine import PolicyEngine
-from ..gateway import Gateway, GatewayClient
+from ..gateway import Gateway, GatewayClient, SessionClosed
 from ..mock_env import MockEnv
 from ..models import Decision
 from ..scope import compile_scope
@@ -222,7 +222,10 @@ def create_app(gateway: Gateway, agent_token: str | None = None,
     def approve(action_id: str, body: Approver):
         if action_id not in gateway.pending:
             raise HTTPException(404, "not pending")
-        return jsonable_encoder({"output": gateway.approve(action_id, body.approver)})
+        try:
+            return jsonable_encoder({"output": gateway.approve(action_id, body.approver)})
+        except SessionClosed as exc:
+            raise HTTPException(409, str(exc)) from exc
 
     @app.post("/pending/{action_id}/reject", dependencies=[admin])
     def reject(action_id: str, body: Approver):
@@ -233,7 +236,7 @@ def create_app(gateway: Gateway, agent_token: str | None = None,
 
     @app.get("/audit", dependencies=[admin])
     def audit(offset: int = 0, limit: int = 100):
-        limit = max(1, min(limit, 500))
+        limit, offset = max(1, min(limit, 500)), max(0, offset)
         rows = gateway.audit.entries[offset:offset + limit]
         return {"total": len(gateway.audit.entries),
                 "entries": [{**e, "payload": json.loads(e["payload"])} for e in rows]}

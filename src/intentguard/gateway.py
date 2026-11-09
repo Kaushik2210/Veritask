@@ -100,6 +100,10 @@ def canonical(path: str) -> str:
     return clean_path(path)[0]
 
 
+class SessionClosed(RuntimeError):
+    """A human tried to approve an action of a session that an administrator has since ended."""
+
+
 class Gateway:
     def __init__(self, tools: list[Tool], catalog: Catalog, engine: PolicyEngine | None = None,
                  audit: AuditLog | None = None):
@@ -247,6 +251,10 @@ class Gateway:
 
     def approve(self, action_id: str, approver: str) -> Any:
         s, tool, args, cls, req, d = self.pending.pop(action_id)
+        if s.closed:  # closing a session means stop: nothing it was waiting on may run afterwards
+            self.audit.append({"event": "approval_refused", "action": action_id, "by": approver, "why": "session closed"})
+            self.resolved[action_id] = ("rejected", None)
+            raise SessionClosed(f"session {s.session_id} was closed; the action was cancelled")
         self.audit.append({"event": "approved", "action": action_id, "by": approver})
         # remember only the two rules whose point is to ask once about a recipient or a file
         if "EGRESS-001" in d.fired_rules and req.destination:
@@ -285,6 +293,11 @@ class Gateway:
         self.sessions[session_id].closed = True
         self._persist(session_id)
         self.audit.append({"event": "closed", "session": session_id, "by": approver, "reason": reason})
+        for action_id, entry in list(self.pending.items()):  # what it was waiting on is cancelled, not left to be approved
+            if entry[0].session_id == session_id:
+                del self.pending[action_id]
+                self.resolved[action_id] = ("rejected", None)
+                self.audit.append({"event": "cancelled", "action": action_id, "session": session_id, "why": "session closed"})
 
     def reject(self, action_id: str, approver: str) -> None:
         self.pending.pop(action_id)
