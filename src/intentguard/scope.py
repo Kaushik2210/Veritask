@@ -21,7 +21,34 @@ _VERBS = [
 ]
 
 
+GRANT_KEYS = {"resources", "destinations", "max_classification", "project_root", "ops"}
+
+
+def validate_grants(grants: object) -> dict:
+    """Refuse grants the engine would otherwise half-ignore: a wrong type, an unknown key (a typo such as `resource`),
+    a bad classification or operation, or absurd sizes. Returns the grants as a dict."""
+    if not isinstance(grants, dict):
+        raise ValueError("grants must be an object")
+    extra = set(grants) - GRANT_KEYS
+    if extra:
+        raise ValueError(f"unknown grant(s) {sorted(extra)}; known: {sorted(GRANT_KEYS)}")
+    for key in ("resources", "destinations", "ops"):
+        v = grants.get(key, [])
+        if not isinstance(v, list) or len(v) > 200 or not all(isinstance(x, str) and len(x) <= 300 for x in v):
+            raise ValueError(f"grants.{key} must be a list of at most 200 short strings")
+    if grants.get("max_classification", "INTERNAL") not in Classification.__members__:
+        raise ValueError(f"grants.max_classification must be one of {list(Classification.__members__)}")
+    bad = [o for o in grants.get("ops", []) if o not in {o.value for o in Op}]
+    if bad:
+        raise ValueError(f"grants.ops: unknown operation(s) {bad}")
+    root = grants.get("project_root")
+    if root is not None and (not isinstance(root, str) or len(root) > 300):
+        raise ValueError("grants.project_root must be a short string")
+    return grants
+
+
 def compile_scope(task: str, grants: dict) -> TaskScope:
+    validate_grants(grants)
     ops: set[Op] = set()
     for pat, o in _VERBS:
         if re.search(pat, task, re.IGNORECASE):

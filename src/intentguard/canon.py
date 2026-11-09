@@ -27,7 +27,8 @@ from urllib.parse import urlsplit
 _CTRL = re.compile(r"[\x00-\x1f\x7f]")
 _PERCENT = re.compile(r"%(?:2e|2f|5c|00|25)", re.IGNORECASE)
 _SHORT = re.compile(r"~\d")
-SUSPICIOUS = {"control-character", "percent-encoding", "colon-in-name", "short-name", "bad-domain"}
+SUSPICIOUS = {"control-character", "percent-encoding", "colon-in-name", "short-name", "bad-domain",
+              "missing-argument", "unexpected-argument"}
 
 
 def clean_path(raw: object) -> tuple[str, list[str]]:

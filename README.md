@@ -31,7 +31,8 @@ files off), the catalog (which files and tables are sensitive, which destination
 tools exist and which argument is the resource or destination, and default grants for sessions opened without their
 own. Unknown keys and bad values are errors that name the section. `intentguard serve --upstream "CMD" --config
 intentguard.toml` puts the service in front of an existing MCP server. The service refuses to listen on anything but
-localhost unless both `--agent-token` and `--admin-token` are set. With `--db FILE` (or `INTENTGUARD_DB`) sessions are kept in SQLite
+localhost unless both `--agent-token` and `--admin-token` are set. Add `--opener-token` so the process that talks to the model holds only
+the agent token and cannot open a session with grants it chose itself (F34). With `--db FILE` (or `INTENTGUARD_DB`) sessions are kept in SQLite
 and restored on restart: risk, restrictions, closed state, approvals and the fingerprints of sensitive data a session has read
 (64-bit hashes keyed with a secret in `<db>.key`, never readable text; keep that file apart from the database). Not saved: actions waiting for a human, and the short buffer of recent outbound text.
 
@@ -61,7 +62,7 @@ an author, and several weaknesses are documented there (F2, F5 to F26). `python 
 the results; run it with `.venv-lf/Scripts/python` (Hugging Face access to Llama Prompt Guard 2 needed) to
 include the LlamaFirewall rows. `docs/literature-review.md` and the spreadsheets next to it hold the
 literature survey; `docs/mcp-demo.md` walks through the MCP gateway with the dashboard. Tests:
-`python -m pytest -q` (323 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
+`python -m pytest -q` (353 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
 
 ## Optional semantic stage
 

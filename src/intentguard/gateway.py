@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+import inspect
 import re
 import shlex
 import unicodedata
@@ -103,6 +104,14 @@ class Gateway:
     def __init__(self, tools: list[Tool], catalog: Catalog, engine: PolicyEngine | None = None,
                  audit: AuditLog | None = None):
         self.__tools = {t.name: t for t in tools}
+        self._params: dict[str, tuple[set[str], bool]] = {}
+        for t in tools:  # which argument names a tool takes, and whether it takes any (**kwargs)
+            try:
+                sig = inspect.signature(t.fn).parameters.values()
+                self._params[t.name] = ({p.name for p in sig if p.kind != p.VAR_KEYWORD},
+                                        any(p.kind == p.VAR_KEYWORD for p in sig))
+            except (TypeError, ValueError):
+                self._params[t.name] = (set(), True)
         self.catalog = catalog
         self.engine = engine or PolicyEngine()
         self.audit = audit or AuditLog()
@@ -167,6 +176,12 @@ class Gateway:
             # judged as a path (found when the gateway blocked legitimate emails with attachment="")
             args = {k: v for k, v in args.items() if k != tool.resource_arg}
         flags: list[str] = []
+        names, takes_any = self._params.get(tool.name, (set(), True))
+        if not takes_any and set(args) - names:
+            flags.append("unexpected-argument")  # an argument the tool does not declare is not something the policy judged
+        for needed in (tool.resource_arg if not tool.resource_optional else None, tool.dest_arg):
+            if needed and (args.get(needed) is None or str(args.get(needed)).strip() == ""):
+                flags.append("missing-argument")  # a call with no file or no recipient has nothing for the policy to judge
         if tool.resource_arg and args.get(tool.resource_arg) is not None:
             clean, f = clean_path(args[tool.resource_arg])  # the tool receives the path that was judged
             args, flags = {**args, tool.resource_arg: clean}, flags + f

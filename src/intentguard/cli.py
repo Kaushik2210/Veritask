@@ -83,6 +83,10 @@ def build_service(a: argparse.Namespace):
     cfg = load_config(a.config) if a.config else Config()
     agent_token = a.agent_token or os.environ.get("INTENTGUARD_AGENT_TOKEN")
     admin_token = a.admin_token or os.environ.get("INTENTGUARD_ADMIN_TOKEN")
+    opener_token = getattr(a, "opener_token", None) or os.environ.get("INTENTGUARD_OPENER_TOKEN")
+    if agent_token and not opener_token:
+        print("note: without --opener-token the agent token can also open sessions, so whatever holds it can choose its "
+              "own grants. Give the process that talks to the model only the agent token.", file=sys.stderr)
     if a.host not in LOOPBACK and not (agent_token and admin_token):
         raise ValueError(f"refusing to listen on {a.host} without both --agent-token and --admin-token "
                          "(or INTENTGUARD_AGENT_TOKEN / INTENTGUARD_ADMIN_TOKEN)")
@@ -104,7 +108,7 @@ def build_service(a: argparse.Namespace):
         n = gw.attach_store(SessionStore(db))
         if n:
             print(f"restored {n} session(s) from {db}", file=sys.stderr)
-    app = create_app(gw, agent_token, admin_token, cfg.grants or None)
+    app = create_app(gw, agent_token, admin_token, cfg.grants or None, opener_token)
     if a.demo:
         add_demo_seed(app, admin_token)
     return app
@@ -157,6 +161,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--db", help="SQLite file that keeps sessions across restarts (or INTENTGUARD_DB)")
     p.add_argument("--agent-token")
     p.add_argument("--admin-token")
+    p.add_argument("--opener-token", help="token that may open sessions (task and grants); keep it out of the agent process")
     p.set_defaults(fn=cmd_serve)
     sub.add_parser("mcp", help="run the MCP gateway (see `intentguard mcp --help`)")
     a = ap.parse_args(argv)

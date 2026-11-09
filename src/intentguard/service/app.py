@@ -25,45 +25,107 @@ from ..mock_env import MockEnv
 from ..models import Decision
 from ..scope import compile_scope
 
+MAX_BODY = 256 * 1024  # bytes; a tool call is small, so anything larger is refused before it is parsed
+
 
 class NewSession(BaseModel):
-    session_id: str
-    agent_id: str
-    task: str
+    session_id: str = Field(pattern=r"^[A-Za-z0-9._:-]{1,64}$")
+    agent_id: str = Field(pattern=r"^[\w .:@-]{1,64}$")
+    task: str = Field(min_length=1, max_length=4000)
     grants: dict = Field(default_factory=dict)
 
 
 class ToolCall(BaseModel):
-    tool: str
+    tool: str = Field(min_length=1, max_length=128)
     args: dict = Field(default_factory=dict)
 
 
 class Approver(BaseModel):
-    approver: str
+    approver: str = Field(min_length=1, max_length=64)
 
 
 class AdminAction(BaseModel):
-    approver: str
-    reason: str = ""
+    approver: str = Field(min_length=1, max_length=64)
+    reason: str = Field(default="", max_length=500)
 
 
-def _guard(expected: str | None):
-    """Bearer-token check; no token configured means open (local demo only)."""
+class _LimitBody:
+    """ASGI middleware: refuse a request body over `max_bytes` with 413, by its header or by counting what arrives.
+    A framework may swallow an exception raised while reading, so an oversize body is read as empty and the
+    application's own reply is replaced by the 413."""
+
+    def __init__(self, app, max_bytes: int = MAX_BODY):
+        self.app, self.max = app, max_bytes
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        length = dict(scope["headers"]).get(b"content-length", b"")
+        if length.isdigit() and int(length) > self.max:
+            return await self._refuse(send)
+        seen = 0
+        too_big = False
+        replied = False
+
+        async def counted():
+            nonlocal seen, too_big
+            msg = await receive()
+            if msg["type"] == "http.request" and not too_big:
+                seen += len(msg.get("body", b""))
+                if seen > self.max:
+                    too_big = True
+            if too_big and msg["type"] == "http.request":
+                return {"type": "http.request", "body": b"", "more_body": False}
+            return msg
+
+        async def watching(msg):
+            nonlocal replied
+            if too_big:
+                if not replied:
+                    replied = True
+                    await self._refuse(send)
+                return
+            await send(msg)
+
+        await self.app(scope, counted, watching)
+
+    @staticmethod
+    async def _refuse(send):
+        body = b'{"detail":"request body too large"}'
+        await send({"type": "http.response.start", "status": 413,
+                    "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
+        await send({"type": "http.response.body", "body": body})
+
+
+def _guard(*expected: str | None):
+    """Bearer-token check. Any one of the configured tokens is accepted; none configured means open (local demo only).
+    The scheme is matched case-insensitively and must be present: a bare token is not accepted."""
+    tokens = [t for t in expected if t]
+
     def dep(authorization: str | None = Header(None)) -> None:
-        if expected is None:
+        if not tokens:
             return
-        got = (authorization or "").removeprefix("Bearer ")
-        if not secrets.compare_digest(got.encode(), expected.encode()):
+        scheme, _, rest = (authorization or "").partition(" ")
+        got = rest.strip() if scheme.lower() == "bearer" else ""
+        if not any(secrets.compare_digest(got.encode(), t.encode()) for t in tokens):
             raise HTTPException(401, "unauthorized")
     return Depends(dep)
 
 
 def create_app(gateway: Gateway, agent_token: str | None = None,
-               admin_token: str | None = None, default_grants: dict | None = None) -> FastAPI:
-    """agent_token protects /sessions (open) and /call; admin_token protects everything else.
-    default_grants apply to a session opened without grants of its own."""
+               admin_token: str | None = None, default_grants: dict | None = None,
+               opener_token: str | None = None) -> FastAPI:
+    """agent_token protects /call; admin_token protects everything else. Opening a session (task and grants) needs
+    opener_token or admin_token when opener_token is set; when it is not, the agent token opens sessions too, which
+    lets whatever holds it choose its own grants, so a real deployment should set it (the process that talks to the
+    model should hold only the agent token). default_grants apply to a session opened without grants of its own.
+    With any token set the interactive docs and the OpenAPI schema are not served."""
     agent, admin = _guard(agent_token), _guard(admin_token)
-    app = FastAPI(title="IntentGuard", version="0.1.0")
+    opener = _guard(opener_token, admin_token) if opener_token else agent
+    locked = bool(agent_token or admin_token or opener_token)
+    app = FastAPI(title="IntentGuard", version="0.1.0", docs_url=None if locked else "/docs",
+                  redoc_url=None if locked else "/redoc", openapi_url=None if locked else "/openapi.json")
+    app.add_middleware(_LimitBody, max_bytes=MAX_BODY)
     app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000"],
                        allow_methods=["*"], allow_headers=["*"])
     clients: dict[str, Any] = {}
@@ -87,7 +149,7 @@ def create_app(gateway: Gateway, agent_token: str | None = None,
 
     app.state.do_open, app.state.do_call = do_open, do_call
 
-    @app.post("/sessions", dependencies=[agent])
+    @app.post("/sessions", dependencies=[opener])
     def open_session(body: NewSession):
         if body.session_id in gateway.sessions:
             raise HTTPException(409, "session exists")
@@ -233,6 +295,7 @@ def demo_app() -> FastAPI:
     audit_file = os.environ.get("INTENTGUARD_AUDIT_FILE")  # persists the hash chain across restarts
     admin_token = os.environ.get("INTENTGUARD_ADMIN_TOKEN")
     app = create_app(Gateway(env.tools(), env.catalog(), PolicyEngine(), AuditLog(audit_file)),
-                     os.environ.get("INTENTGUARD_AGENT_TOKEN"), admin_token)
+                     os.environ.get("INTENTGUARD_AGENT_TOKEN"), admin_token,
+                     opener_token=os.environ.get("INTENTGUARD_OPENER_TOKEN"))
     add_demo_seed(app, admin_token)
     return app

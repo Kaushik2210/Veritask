@@ -58,7 +58,7 @@ RULE_TEXT = {
     "EGRESS-001": "The destination is not on the approved list",
     "EGRESS-002": "Confidential data seen in this session would leave to an unapproved destination",
     "EGRESS-003": "The destination is denylisted",
-    "INPUT-001": "The path or address uses characters or encodings that a tool may read differently from the policy",
+    "INPUT-001": "The call has a path, address or argument the policy cannot judge safely (odd characters or encodings, a missing required value, an argument the tool does not declare)",
     "TAINT-001": "The outbound content contains a secret or credential",
     "TAINT-002": "The outbound content contains data read from a sensitive file in this session",
     "TAINT-003": "The outbound content appears to restate sensitive data read in this session",

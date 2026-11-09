@@ -891,3 +891,27 @@ the benchmark had not covered this.
   `pragma_table_info(...)` reads (these reveal table names, not data), SQL built by string concatenation inside the database, and any
   allowed program that itself runs commands (`find -exec` is not on the allowlist for that reason).
 - The allowlist still has only six programs, so most real shell work is refused. Widening it safely needs per-program argument checks.
+
+## F34. The HTTP service: an agent could choose its own grants, and malformed calls were waved through
+
+A third probe, of the HTTP service and the gateway's handling of call arguments, found these (each was reproduced before it was fixed):
+
+| Finding | Before | After |
+|---|---|---|
+| The agent token could open a session, and a session carries its own grants. Whatever held that token (the process the model controls) could open one with `resources: *`, ceiling SECRET and an attacker as an allowed destination. | possible | a separate **opener token** (`--opener-token`, `INTENTGUARD_OPENER_TOKEN`): with it set, the agent token can only call inside sessions the harness opened. The admin token may also open. |
+| A call with no file, no recipient or a null value (`{"path": null}`, a tool with a default recipient) was ALLOWED, because the policy had nothing to judge. | ALLOW | BLOCK (INPUT-001, "missing-argument") |
+| An argument the tool does not declare (`mode="w"`) reached the tool. | passed through | BLOCK (INPUT-001, "unexpected-argument"); tools that take `**kwargs`, such as proxied MCP tools, are exempt |
+| A 5 MB path was parsed and judged. | accepted | 413 at 256 KB, by header or by counting chunks |
+| Session ids could be empty, 10,000 characters long, or `../../etc`; tasks, agent ids and tool names were unbounded. | accepted | 422: ids are 1 to 64 plain characters, tasks at most 4,000 characters |
+| Grants were half-ignored: a string instead of a list, an unknown key such as `resource`, a bad classification, 10,000 entries. | some accepted silently | 422 with the reason; the same check runs in the SDK and CLI |
+| A bare token without `Bearer ` was accepted, and a lowercase `bearer` was refused. | wrong both ways | the scheme must be present and is case-insensitive |
+| `/docs` and `/openapi.json` were served even with tokens set. | served | not served when any token is set |
+
+**Not changed, on purpose.** Without `--opener-token` the agent token still opens sessions (existing deployments keep working), and `serve`
+prints a note saying so; a deployment where the model's process holds the agent token should set it. A session id is still not a secret, so a
+holder of the agent token can call any session whose id it knows (the dashboard's ids are guessable); binding a session to a per-session token is
+future work. There is no rate limiting, no TLS (put a reverse proxy in front) and no per-agent quota, so a client can make many calls and
+raise its own risk or fill the audit log. Findings here come from a probe by the engine's author, not a penetration test.
+
+**Measured.** No benchmark number changed (every earlier set is identical to the digit): the benchmark calls tools with well-formed arguments,
+so it could not have shown these. They are covered by 30 new tests instead (`tests/test_service_hardening.py`).
