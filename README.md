@@ -62,7 +62,7 @@ an author, and several weaknesses are documented there (F2, F5 to F26). `python 
 the results; run it with `.venv-lf/Scripts/python` (Hugging Face access to Llama Prompt Guard 2 needed) to
 include the LlamaFirewall rows. `docs/literature-review.md` and the spreadsheets next to it hold the
 literature survey; `docs/mcp-demo.md` walks through the MCP gateway with the dashboard. Tests:
-`python -m pytest -q` (373 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
+`python -m pytest -q` (394 passing locally; the LangChain tests skip in a clean `.[dev]` environment).
 
 ## Optional semantic stage
 

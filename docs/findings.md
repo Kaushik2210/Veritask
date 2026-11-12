@@ -932,3 +932,32 @@ A fourth probe, of the approval flow and the MCP protocol layer:
 after a few), so it is not an unbounded-memory path at the default settings; with `lockout_review` on, which turns lock-outs into reviews, a cap on pending actions per session would be needed.
 
 **Measured.** No benchmark number changed. 20 new tests (`tests/test_state_and_protocol.py`). Same caveat as F34: a probe by the engine's author, not an audit.
+
+## F36. Seeded fuzzing of the gateway and engine: no failures at the current commit, and a check that the checker works
+
+The probes behind F32 to F35 were hand-written. To look for what they missed, `tests/fuzz_support.py` generates random sessions (nine task and grant
+templates, two agents) and random hostile calls (about 60 odd paths, 25 odd destinations, shell lines with operators and expansions, SQL with writes and
+attaches, secret-looking and re-written bodies, missing, null, wrong-typed and undeclared arguments, unknown tools), interleaved with human approvals and
+administrator closes, all from a seed. After each run it checks:
+
+1. nothing escapes the gateway as an exception, and no decision is an internal engine error (`ENGINE-ERR`, the fail-closed path);
+2. a tool runs only under an ALLOW (counted by wrapping the tools, not by trusting the decision);
+3. the audit hash chain verifies; risk stays within 0 to 1; replaying a seed gives identical decisions;
+4. a session that has been frozen (QUARANTINE) never allows anything again;
+5. an independent oracle (`tests/fuzz_oracle.py`) recomputes, from the catalog and the grants only, that every ALLOW respected the policy: no read above the
+   ceiling or of a flagged or missing path, no send to a denylisted or unknown-and-ungranted destination or with none, no shell line that is not one allowed simple
+   command, no SQL that writes, no unregistered tool.
+
+**Result at the current commit:** 1,500 seeds of 120 steps (about 180,000 calls) with no violation of any of these. The test suite runs 40 seeds by default
+(3 seconds); `INTENTGUARD_FUZZ_SEEDS=1500 pytest tests/test_fuzz.py` reproduces the large run (about two minutes).
+
+**Does the checker work?** Run at commit `266ff1c`, the one just before the F33 and F34 fixes, the same seeds and oracle report 66 violations in 150 seeds: calls
+with no path or no recipient allowed, `ATTACH DATABASE` allowed as a query, `ls | sh` and a newline-chained command allowed. So the oracle detects the bugs that were
+real, and the zero at the current commit means more than silence. The suite also feeds the oracle fabricated bad decisions (eleven kinds) and requires it to flag each.
+
+**What this does not show.**
+- The generator's inputs are the ones I thought of. Fuzzing from a fixed vocabulary finds interactions between known tricks, not new tricks; the earlier
+  probes were the new-trick part. A fuzzer with a mutation step (flip, insert, or splice characters of a successful bypass) would reach further.
+- The oracle shares `canon.clean_path` and `clean_destination` with the gateway, so a mistake in those two functions would not be seen by it. Its other checks are independent.
+- It checks the policy's decisions, not what a real tool does with an allowed call (symlinks, aliases and the other things F32 and F33 list as not handled).
+- No fuzzing of the lineage and semantic stages' accuracy: only that they do not crash or break an invariant.
