@@ -961,3 +961,32 @@ real, and the zero at the current commit means more than silence. The suite also
 - The oracle shares `canon.clean_path` and `clean_destination` with the gateway, so a mistake in those two functions would not be seen by it. Its other checks are independent.
 - It checks the policy's decisions, not what a real tool does with an allowed call (symlinks, aliases and the other things F32 and F33 list as not handled).
 - No fuzzing of the lineage and semantic stages' accuracy: only that they do not crash or break an invariant.
+
+## F37. Mutation fuzzing of spellings found three more path bypasses; addresses held
+
+F36's fuzzer draws from a fixed vocabulary. A mutation fuzzer (`tests/fuzz_mutate.py`, `tests/test_mutation_fuzz.py`) goes further: it takes a known sensitive file
+or denylisted address, applies one to three spelling tricks that some real file system, URL decoder or mail library treats as the same target (case, fullwidth
+letters, trailing dots and spaces, NUL, streams, drive and device prefixes, backslashes, `x/../`, percent-encoding, invisible characters; for addresses also
+display names, comments, quoted local parts, `+tags`, `mailto:`), and asks an **independent model** of what a tool would reach whether the gateway still refuses it. The
+model (`reaches_file`, `reaches_address`) is written without `intentguard.canon`, as four kinds of file system (exact, Windows, macOS with ignorable code points, URL-decoding)
+and a mail library, so a mistake in the gateway's cleaning is not invisible to it.
+
+**Found.** 4,000 trials against the F32 fix produced **43 distinct spellings of a sensitive file that the gateway ALLOWED**, from three root causes (addresses: none):
+
+| Root cause | Example | Reached by |
+|---|---|---|
+| a Windows device prefix left a stray `?` component | `\\?\hr\salary.xlsx` | a Windows tool |
+| percent-encoded ordinary letters (F32 only flagged `%2e`, `%2f`, `%5c`, `%00`, `%25`) | `%68r/%73alary.xlsx` | a URL-decoding tool |
+| invisible or format characters inside a name | `hr/sal\u00adary.xlsx`, a zero-width space | a file system that skips them when comparing (old HFS+) |
+
+**Fixed** (`src/intentguard/canon.py`, rule INPUT-001): any percent-encoded byte, any invisible character (Unicode categories Cf, Co, Cn, Zl, Zp, which also covers
+right-to-left overrides used to spoof names) and a device prefix (`\\?\`, `\\.\`, `UNC`) are now flagged and the call is blocked; the same invisible-character check applies
+to addresses. After the fix: **0 bypasses in 20,000 trials per kind**, and no benchmark number changed.
+
+**Costs.** A path that legitimately contains an encoded byte (`a%20b.md`) or an invisible character is now refused. A bare `%` ("50% done.md") is fine. Device-namespace
+paths are refused even where a Windows caller might legitimately use them for long paths.
+
+**Limits of this fuzzer.** The mutations are the ones I could think of, and the independent model encodes my belief about how four kinds of file system behave; I did not
+test against real file systems, and the macOS "ignorable code points" behaviour belongs to old HFS+ and not to current APFS, so that class may be theoretical. The model does
+not cover symbolic links, hard links, mount points, 8.3 short names (refused, not resolved) or tool-specific parsing. The test suite runs 800 trials per kind (about
+1 second); `INTENTGUARD_MUTATION_TRIALS=20000` reproduces the large run (about 15 seconds).

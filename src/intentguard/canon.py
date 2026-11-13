@@ -3,11 +3,12 @@
 A policy that judges one spelling while a tool opens another is bypassed by the difference. These helpers turn what the agent
 typed into (a) a key the policy compares and (b) the value the tool receives, and report spellings no honest caller needs.
 
-Paths: Unicode is normalised (NFKC), backslashes become slashes, `.` and `..` are resolved, trailing dots and spaces on a
+Paths: Unicode is normalised (NFKC), backslashes become slashes, a Windows device prefix (`\\\\?\\`, `\\\\.\\`) is dropped, `.` and `..` are resolved, trailing dots and spaces on a
 component are dropped (Windows ignores them), a drive letter or leading slash is dropped (everything is relative to the
 project root), and the key is case-folded (many file systems ignore case). Flagged as suspicious: control characters
 (a NUL ends a C string early), percent-encoded dots, slashes or NULs (a URL-style tool decodes them), a colon inside a name
-(an NTFS stream such as `file::$DATA`), and 8.3 short names (`HR~1`).
+(an NTFS stream such as `file::$DATA`), 8.3 short names (`HR~1`), any percent-encoded byte (not only dots and slashes: `%68r` is
+`hr` to a URL-style tool), invisible or format characters (some file systems skip them when comparing names), and a Windows device prefix.
 
 Addresses and URLs: surrounding space, angle brackets, `mailto:` and a display name are dropped; a URL is judged by its host
 (user-info tricks such as `files.partner.org@evil.example` resolve to the real host); trailing dots and letter case are ignored;
@@ -25,10 +26,12 @@ import unicodedata
 from urllib.parse import urlsplit
 
 _CTRL = re.compile(r"[\x00-\x1f\x7f]")
-_PERCENT = re.compile(r"%(?:2e|2f|5c|00|25)", re.IGNORECASE)
+_PERCENT = re.compile(r"%[0-9a-f]{2}", re.IGNORECASE)
+_DEVICE = re.compile(r"^//[?.]/(?:unc/)?", re.IGNORECASE)
+_INVISIBLE = {"Cf", "Co", "Cn", "Zl", "Zp"}  # format, private-use, unassigned, line and paragraph separators
 _SHORT = re.compile(r"~\d")
 SUSPICIOUS = {"control-character", "percent-encoding", "colon-in-name", "short-name", "bad-domain",
-              "missing-argument", "unexpected-argument"}
+              "missing-argument", "unexpected-argument", "invisible-character", "device-path"}
 
 
 def clean_path(raw: object) -> tuple[str, list[str]]:
@@ -40,7 +43,12 @@ def clean_path(raw: object) -> tuple[str, list[str]]:
         s = _CTRL.sub("", s)
     if _PERCENT.search(s):
         flags.add("percent-encoding")
+    if any(unicodedata.category(c) in _INVISIBLE for c in s):
+        flags.add("invisible-character")
     s = s.replace("\\", "/")
+    if _DEVICE.match(s):
+        flags.add("device-path")
+        s = _DEVICE.sub("", s)
     s = re.sub(r"^[A-Za-z]:", "", s)  # a drive letter: everything is relative to the project root
     parts = []
     for comp in s.split("/"):
@@ -68,6 +76,8 @@ def clean_destination(raw: object) -> tuple[str, str, list[str]]:
     if _CTRL.search(s):
         flags.add("control-character")
         s = _CTRL.sub("", s).strip()
+    if any(unicodedata.category(c) in _INVISIBLE for c in s):
+        flags.add("invisible-character")
     named = re.search(r"<([^<>]+)>\s*$", s)  # Display Name <address>
     if named:
         s = named.group(1).strip()
