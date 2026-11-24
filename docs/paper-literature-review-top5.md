@@ -1,6 +1,6 @@
 # Related Work, five-paper version (draft)
 
-Five papers chosen as the closest to IntentGuard: CaMeL, Progent, intent-governed access control, The Task Shield and STAC.
+Five papers chosen as the closest to Veritask: CaMeL, Progent, intent-governed access control, The Task Shield and STAC.
 Built from the matrix, whose findings columns were written from abstracts, so verify each claim against the full paper.
 
 ## II. Related Work
@@ -21,7 +21,7 @@ can be deterministic and inspectable. Progent is a preprint.
 effects of a tool call and its payload before it runs, and it cannot grant authority beyond the static policy [3]. Its confinement
 depends on how faithful the intent certificate is and on sound bounds for tool effects, and it is also a preprint. The Task Shield
 asks a related question at the action level, checking whether each agent action contributes to the task the user specified, and
-rejecting those that do not [4]. These two are the nearest prior art to IntentGuard's use of the user's task as the basis for
+rejecting those that do not [4]. These two are the nearest prior art to Veritask's use of the user's task as the basis for
 authorization, and the comparison with them should be made directly.
 
 **Attacks made of allowed steps.** STAC chains tool calls that are each harmless into a harmful operation, reports an average
@@ -30,7 +30,7 @@ action sequence lasts longer [5]. This matters for the designs above, because a 
 task-alignment check applied per action, can pass every step of such a chain.
 
 **Position of this work.** In the sources reviewed, enforcement is mostly judged call by call, against static or task-derived
-policy. IntentGuard keeps a task-scoped decision for each call but adds three elements that are less developed in these five:
+policy. Veritask keeps a task-scoped decision for each call but adds three elements that are less developed in these five:
 risk that accumulates across a session and narrows permissions in stages, tracking of sensitive content the session has already
 read and matching it against outbound data after decoding, and a human-review path with a tamper-evident audit log. It is
 evaluated on synthetic sets that share an author with the system, so we make no claim that it outperforms [1]-[4]; no

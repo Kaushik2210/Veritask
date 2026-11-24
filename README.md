@@ -1,7 +1,9 @@
-# IntentGuard
+# Veritask
 
 Intent-aware and behavioural runtime authorization for autonomous AI agents. Research prototype.
 Paper working title: *Intent-Aware Authorization for AI Agents*.
+
+Formerly named IntentGuard. The GitHub repository and the Pages address still use the old name until the repository is renamed.
 
 Every tool call goes through a gateway that decides ALLOW / REVIEW / BLOCK / QUARANTINE using
 deterministic rules over: the user's task scope, resource classification, destination trust,
@@ -13,26 +15,26 @@ pip install -e .[dev]
 pytest
 ```
 
-## Quick start: the `intentguard` command
+## Quick start: the `veritask` command
 
 ```
-pip install -e ".[dev]"          # installs the `intentguard` command
-intentguard init                 # writes a documented intentguard.toml to edit
-intentguard check-config intentguard.toml
-intentguard serve --demo         # HTTP service + dashboard backend, mock tools, http://127.0.0.1:8000
-intentguard serve --demo --db sessions.db   # same, but sessions survive a restart
-intentguard mcp --demo --task "Read research/paper.pdf and summarize it." --grants '{"resources":["research/*"]}'   # MCP gateway
-intentguard verify-audit audit.jsonl                                       # is the hash chain intact?
-intentguard report audit.jsonl                                             # readable summary per session
+pip install -e ".[dev]"          # installs the `veritask` command
+veritask init                 # writes a documented veritask.toml to edit
+veritask check-config veritask.toml
+veritask serve --demo         # HTTP service + dashboard backend, mock tools, http://127.0.0.1:8000
+veritask serve --demo --db sessions.db   # same, but sessions survive a restart
+veritask mcp --demo --task "Read research/paper.pdf and summarize it." --grants '{"resources":["research/*"]}'   # MCP gateway
+veritask verify-audit audit.jsonl                                       # is the hash chain intact?
+veritask report audit.jsonl                                             # readable summary per session
 ```
 
 One TOML file configures everything: the engine (quarantine level, the risk ladder that switches network, shell and
 files off), the catalog (which files and tables are sensitive, which destinations are trusted or denylisted), which
 tools exist and which argument is the resource or destination, and default grants for sessions opened without their
-own. Unknown keys and bad values are errors that name the section. `intentguard serve --upstream "CMD" --config
-intentguard.toml` puts the service in front of an existing MCP server. The service refuses to listen on anything but
+own. Unknown keys and bad values are errors that name the section. `veritask serve --upstream "CMD" --config
+veritask.toml` puts the service in front of an existing MCP server. The service refuses to listen on anything but
 localhost unless both `--agent-token` and `--admin-token` are set. Add `--opener-token` so the process that talks to the model holds only
-the agent token and cannot open a session with grants it chose itself (F34). With `--db FILE` (or `INTENTGUARD_DB`) sessions are kept in SQLite
+the agent token and cannot open a session with grants it chose itself (F34). With `--db FILE` (or `VERITASK_DB`) sessions are kept in SQLite
 and restored on restart: risk, restrictions, closed state, approvals and the fingerprints of sensitive data a session has read
 (64-bit hashes keyed with a secret in `<db>.key`, never readable text; keep that file apart from the database). Not saved: actions waiting for a human, and the short buffer of recent outbound text.
 
@@ -41,10 +43,10 @@ and restored on restart: risk, restrictions, closed state, approvals and the fin
 Implemented: deterministic policy engine (task scope, taint/egress, content lineage of sensitive data, input canonicalisation of paths and addresses (F32), whole-command shell and SQL checks (F33), fuzzing and mutation fuzzing with an independent oracle (F36, F37),
 sequence risk, injection-aware output scan, dynamic permission reduction, cross-session risk carry-over,
 database table classification, session approval memory), hash-chained audit log, approval queue, FastAPI
-service with agent/admin bearer tokens, Next.js dashboard with session admin (release and close), a config file and the `intentguard`
+service with agent/admin bearer tokens, Next.js dashboard with session admin (release and close), a config file and the `veritask`
 command, HTTP-only agent process, structured errors when a tool fails after being allowed, a LangChain/LangGraph
 adapter, an MCP gateway (demo and proxy modes, with an approval channel that waits for a human in the
-dashboard), IntentGuardBench (hand-written, seeded-generated, adversarial and red-team sets with dev and
+dashboard), VeritaskBench (hand-written, seeded-generated, adversarial and red-team sets with dev and
 held-out halves, ablations, baselines incl. LlamaFirewall local scanners, Llama Prompt Guard 2, and deterministic stand-ins for the ideas behind Progent and The Task Shield, see F27), and
 harnesses that run real local Ollama models as agents, directly and through the MCP gateway.
 
@@ -76,8 +78,8 @@ semantic = "proximity"        # built in: numbers in 5 languages and "grand", wi
 ```
 
 ```python
-from intentguard import EngineConfig, PolicyEngine
-from intentguard.semantic import CombinedJudge, OllamaJudge, ProximityJudge
+from veritask import EngineConfig, PolicyEngine
+from veritask.semantic import CombinedJudge, OllamaJudge, ProximityJudge
 
 engine = PolicyEngine(EngineConfig(), judge=CombinedJudge(ProximityJudge(), OllamaJudge("qwen2.5:7b")))  # a model on this machine
 ```
@@ -111,7 +113,7 @@ No framework needed: decorate the functions the agent may use, open a session fo
 the session. `examples/guard_your_own_tools.py` runs end to end.
 
 ```python
-from intentguard.sdk import Guard
+from veritask.sdk import Guard
 
 guard = Guard(classes={"hr/salary.csv": "CONFIDENTIAL"}, trust={"bob@x.org": "approved"})
 
@@ -135,8 +137,8 @@ human, or explains why not, in text the model can read.
 
 ```python
 from langchain.agents import create_agent
-from intentguard.client import open_http_session           # or InProcessSession(gateway.open_session(...))
-from intentguard.integrations.langchain import guarded_tools
+from veritask.client import open_http_session           # or InProcessSession(gateway.open_session(...))
+from veritask.integrations.langchain import guarded_tools
 
 session = open_http_session("http://localhost:8000", task, grants)   # grants: resources, destinations, ceiling
 agent = create_agent(model, guarded_tools(session))
@@ -148,15 +150,15 @@ agent = create_agent(model, guarded_tools(session))
 
 ## MCP gateway
 
-`intentguard.mcp_gateway` is an MCP server (stdio or Streamable HTTP, standard library only) that authorizes every `tools/call`
+`veritask.mcp_gateway` is an MCP server (stdio or Streamable HTTP, standard library only) that authorizes every `tools/call`
 against the user's task before it runs. A blocked call comes back as an MCP error result with the reason.
 
 ```bash
 # demo tools (synthetic data)
-python -m intentguard.mcp_gateway --demo --task "Read research/paper.pdf and summarize it." --grants grants.json
+python -m veritask.mcp_gateway --demo --task "Read research/paper.pdf and summarize it." --grants grants.json
 
 # protect an existing MCP server: only the tools named in proxy.json are exposed and forwarded
-python -m intentguard.mcp_gateway --upstream "python my_server.py" --config proxy.json \
+python -m veritask.mcp_gateway --upstream "python my_server.py" --config proxy.json \
     --task "Read notes/a.txt and email bob@x.org the summary" --grants grants.json --audit-file audit.jsonl
 ```
 
@@ -169,7 +171,7 @@ is not listed is never shown to the client, and a call to it is blocked and audi
 connect to a URL. It answers with plain JSON (no SSE streaming; GET returns 405), caps the body at 1 MB, refuses a
 browser `Origin` that is not local (stops DNS rebinding from a web page; allow more with `--http-origin`), and
 requires `Authorization: Bearer <token>` when you pass `--http-token`. Listening on a non-loopback `--http-host`
-is refused unless a token is set. All clients share the gateway's one IntentGuard session, as with stdio, so run
+is refused unless a token is set. All clients share the gateway's one Veritask session, as with stdio, so run
 one gateway per user task; there is no TLS, so put it behind a reverse proxy before exposing it.
 
 **Approvals.** Add `--approvals-port 8765` (needs `pip install -e ".[api]"`) and the gateway also serves the
@@ -191,7 +193,7 @@ the upstream; `tests/test_mcp_http.py` covers the HTTP transport, its origin, to
 
 ```
 pip install -e .[dev]
-intentguard serve --demo --port 8000        # or: uvicorn intentguard.service.app:demo_app --factory
+veritask serve --demo --port 8000        # or: uvicorn veritask.service.app:demo_app --factory
 cd dashboard; npm install; npm run dev     # http://localhost:3000
 ```
 
@@ -205,6 +207,6 @@ forgotten; both actions need the admin token and go into the audit log with the 
 Click "Load sample scenarios" on the Overview page to replay synthetic scenarios. With no tokens set
 the service is open and keeps sessions in memory; it is a local demo only.
 
-Auth: set `INTENTGUARD_AGENT_TOKEN` and `INTENTGUARD_ADMIN_TOKEN` on the service (and
-`NEXT_PUBLIC_ADMIN_TOKEN` for the dashboard, local demo only). `INTENTGUARD_AUDIT_FILE` persists the
+Auth: set `VERITASK_AGENT_TOKEN` and `VERITASK_ADMIN_TOKEN` on the service (and
+`NEXT_PUBLIC_ADMIN_TOKEN` for the dashboard, local demo only). `VERITASK_AUDIT_FILE` persists the
 audit chain.

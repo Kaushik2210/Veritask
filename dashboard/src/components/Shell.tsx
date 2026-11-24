@@ -22,7 +22,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <span className="grid h-7 w-7 place-items-center rounded-lg bg-accent text-black">
             <ShieldCheck size={16} />
           </span>
-          <span className="font-semibold tracking-tight">IntentGuard</span>
+          <span className="font-semibold tracking-tight">Veritask</span>
         </div>
         <nav className="flex gap-1 md:flex-col">
           {NAV.map(({ href, label, icon: Icon }) => {

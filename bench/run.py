@@ -15,8 +15,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from intentguard import Gateway, Verdict, compile_scope  # noqa: E402
-from intentguard.mock_env import MockEnv  # noqa: E402
+from veritask import Gateway, Verdict, compile_scope  # noqa: E402
+from veritask.mock_env import MockEnv  # noqa: E402
 
 from .adversarial import build_adv, build_adv2  # noqa: E402
 from .baselines import SYSTEMS  # noqa: E402
@@ -118,7 +118,7 @@ def report(label: str, episodes, out: Path, commit: str) -> str:
             "seed": "none (deterministic scripted episodes)"}
     (out / f"results_{label}.json").write_text(
         json.dumps({"meta": meta, "summary": summary, "rows": all_rows}, indent=1))
-    lines = [f"## IntentGuardBench {label}\n", f"commit `{commit}`, episode-set hash `{cfg_hash}`, "
+    lines = [f"## VeritaskBench {label}\n", f"commit `{commit}`, episode-set hash `{cfg_hash}`, "
              f"{meta['episodes']} episodes {meta['by_kind']}, deterministic scripted agent, synthetic env."
              + (f" Written by: {', '.join(meta['authors'])}." if meta["authors"] else "") + "\n",
              "| System | ASR (95% CI) | Detection | FPR block (95% CI) | Review friction | Precision "
@@ -149,7 +149,7 @@ def main() -> None:
     external = load_external()
     if external:  # independent episodes written by someone else, dropped in bench/external/
         sets.append(("external_independent", external))
-    md = "# IntentGuardBench results\n\n" + "\n".join(
+    md = "# VeritaskBench results\n\n" + "\n".join(
         report(label, eps, out, commit) for label, eps in sets)
     (out / "results.md").write_text(md)
     print(md)

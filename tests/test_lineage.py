@@ -3,8 +3,8 @@
 import base64
 from urllib.parse import quote
 
-from intentguard import EngineConfig, Gateway, PolicyEngine, Verdict, compile_scope
-from intentguard.mock_env import MockEnv
+from veritask import EngineConfig, Gateway, PolicyEngine, Verdict, compile_scope
+from veritask.mock_env import MockEnv
 
 ENV = {"resources": ["secrets/*"], "project_root": "secrets/", "max_classification": "SECRET",
        "destinations": ["advisor@university.edu"]}

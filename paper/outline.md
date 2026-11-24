@@ -14,7 +14,7 @@ Numbers in this file are never typed by hand. Run `python -m bench.run` then
   1. A deterministic authorization model combining task scope, data classification, destination trust,
      taint, and cumulative session risk with dynamic permission reduction.
   2. A hash-chained audit design and explanation-carrying decisions.
-  3. IntentGuardBench: a seeded, labelled episode generator plus a hand-written adversarial set.
+  3. VeritaskBench: a seeded, labelled episode generator plus a hand-written adversarial set.
   4. Ablations and an honest failure analysis.
 - Do not claim: complete protection, superiority over published tools (no such baseline measured yet).
 
@@ -31,14 +31,14 @@ Scope compiler, policy engine (rule catalogue), taint ledger and egress policy, 
 reduction ladder, approval queue with evidence-based explanations, audit chain. LLM is optional and
 never the final authority.
 
-## 4. IntentGuardBench
+## 4. VeritaskBench
 Generator templates, label definitions (harmful step vs clean step), sets (core, seq, generated dev /
 held-out / fresh, adversarial), dev/held-out discipline from `docs/findings.md`.
 Limitation: author of engine = author of benchmark. Needs an independent episode set.
 
 ## 5. Evaluation
 Metrics: ASR, detection, benign block rate, review friction, precision, exfil rate, task completion,
-latency, Wilson 95% intervals. Systems: unprotected, static RBAC, keyword stand-in, IntentGuard,
+latency, Wilson 95% intervals. Systems: unprotected, static RBAC, keyword stand-in, Veritask,
 ablations. External published guardrail: TO MEASURE.
 RQ1 intent-to-policy, RQ2 multi-step, RQ3 dynamic reduction, RQ4 overhead.
 Report negative and mixed results: the hand-written-set number (11.4%) did not transfer to held-out

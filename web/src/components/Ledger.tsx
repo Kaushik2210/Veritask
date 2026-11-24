@@ -13,7 +13,7 @@ function label(payload: string): string {
   }
 }
 
-/** Same check as AuditLog.verify in src/intentguard/audit.py. Returns the first bad index, or -1. */
+/** Same check as AuditLog.verify in src/veritask/audit.py. Returns the first bad index, or -1. */
 function firstBad(entries: ChainEntry[]): number {
   let prev = GENESIS;
   for (let i = 0; i < entries.length; i++) {

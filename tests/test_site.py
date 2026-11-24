@@ -53,7 +53,7 @@ def test_every_blocked_step_names_a_rule(data):
 def test_the_site_data_matches_the_engine():
     published = json.loads((ROOT / "web" / "src" / "data" / "site-data.json").read_text(encoding="utf-8"))
     # the audit chain holds random action ids, so it differs on every run; it is checked for validity instead
-    from intentguard.audit import AuditLog
+    from veritask.audit import AuditLog
     log = AuditLog()
     log.entries = published.pop("chain")
     assert log.verify() == (True, None)
@@ -65,7 +65,7 @@ def test_the_site_data_matches_the_engine():
 
 def test_the_published_page_exists_and_loads_nothing_from_elsewhere():
     html = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
-    assert "IntentGuard" in html and "/_next/" in html, "docs/ has no exported site: run `npm run publish:docs` in web/"
+    assert "Veritask" in html and "/_next/" in html, "docs/ has no exported site: run `npm run publish:docs` in web/"
     assert not re.search(r'<(script|link|img|iframe)[^>]+(src|href)="https?://', html)
 
 
@@ -82,8 +82,8 @@ def test_the_javascript_port_agrees_with_the_python_engine():
     import shutil
     import subprocess
 
-    from intentguard.engine import _decodings, _fp, _grams, _leet, _numbers, _overlaps
-    from intentguard.mock_env import FILES
+    from veritask.engine import _decodings, _fp, _grams, _leet, _numbers, _overlaps
+    from veritask.mock_env import FILES
     if shutil.which("node") is None:
         pytest.skip("node is not installed")
     src = FILES["hr/salary.xlsx"][0]
@@ -108,7 +108,7 @@ def test_the_javascript_port_agrees_with_the_python_engine():
 
 
 def test_the_audit_chain_shown_on_the_page_is_the_real_one(data):
-    from intentguard.audit import AuditLog
+    from veritask.audit import AuditLog
     log = AuditLog()
     log.entries = [dict(e) for e in data["chain"]]
     assert log.verify() == (True, None) and len(data["chain"]) >= 4

@@ -1,4 +1,4 @@
-"""A real local-model agent whose only tools come from an MCP server: the IntentGuard MCP gateway.
+"""A real local-model agent whose only tools come from an MCP server: the Veritask MCP gateway.
 
     python agents/mcp_agent.py --model llama3.1:8b --approvals-port 8000 \\
         --task "Read research/memo_user.md and email bob@newlab.org a short summary." \\
@@ -54,7 +54,7 @@ async def run_agent(task: str, model: str, gateway_python: str, gateway_args: li
                     max_turns: int = 8, log: Callable[..., None] = lambda *a: None,
                     system: str = SYSTEM) -> list[dict]:
     """One episode. Returns [{"tool", "args", "is_error", "text"}] in call order."""
-    gw = ["-m", "intentguard.mcp_gateway", "--demo", "--task", task, "--grants", json.dumps(GRANTS), *gateway_args]
+    gw = ["-m", "veritask.mcp_gateway", "--demo", "--task", task, "--grants", json.dumps(GRANTS), *gateway_args]
     params = StdioServerParameters(command=gateway_python, args=gw, env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
     events: list[dict] = []
     async with stdio_client(params) as (read, write), ClientSession(read, write) as session:

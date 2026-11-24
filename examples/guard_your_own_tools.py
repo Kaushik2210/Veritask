@@ -1,6 +1,6 @@
-"""Put IntentGuard in front of your own Python functions. Run: python examples/guard_your_own_tools.py"""
+"""Put Veritask in front of your own Python functions. Run: python examples/guard_your_own_tools.py"""
 
-from intentguard.sdk import Guard
+from veritask.sdk import Guard
 
 guard = Guard(
     classes={"hr/salary.csv": "CONFIDENTIAL"},

@@ -1,5 +1,5 @@
 /* SHA-256 in plain TypeScript, so the audit ledger can re-hash entries in the browser without a secure context.
-   Same construction as src/intentguard/audit.py: entry_hash = sha256(prev_hash + payload). */
+   Same construction as src/veritask/audit.py: entry_hash = sha256(prev_hash + payload). */
 
 function primes(n: number): number[] {
   const out: number[] = [];

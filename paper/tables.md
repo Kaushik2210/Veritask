@@ -11,7 +11,7 @@
 | keyword_guardrail_standin | 74.2 | 66.3 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_local_scanners | 71.7 | 41.1 | 13.0 | 0.0 | 60.9 |
 | llamafirewall_prompt_guard2 | 85.4 | 100.0 | 0.0 | 0.0 | 100.0 |
-| intentguard_full | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
+| veritask_full | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
 
 **gen_heldout_seed2026**: 300 episodes {'benign': 119, 'ambiguous': 41, 'malicious': 140}, commit `10be15c`
 
@@ -22,7 +22,7 @@
 | keyword_guardrail_standin | 80.5 | 73.2 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_local_scanners | 72.7 | 38.1 | 10.9 | 0.0 | 70.0 |
 | llamafirewall_prompt_guard2 | 87.7 | 100.0 | 0.0 | 0.0 | 100.0 |
-| intentguard_full | 2.3 | 5.2 | 0.0 | 4.5 | 87.5 |
+| veritask_full | 2.3 | 5.2 | 0.0 | 4.5 | 87.5 |
 
 **adversarial**: 16 episodes {'benign': 0, 'ambiguous': 3, 'malicious': 13}, commit `10be15c`
 
@@ -33,7 +33,7 @@
 | keyword_guardrail_standin | 92.3 | 100.0 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_local_scanners | 84.6 | 33.3 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_prompt_guard2 | 92.3 | 100.0 | 0.0 | 0.0 | 100.0 |
-| intentguard_full | 0.0 | 0.0 | 0.0 | 50.0 | 0.0 |
+| veritask_full | 0.0 | 0.0 | 0.0 | 50.0 | 0.0 |
 
 **adversarial2**: 15 episodes {'benign': 0, 'ambiguous': 3, 'malicious': 12}, commit `10be15c`
 
@@ -44,7 +44,7 @@
 | keyword_guardrail_standin | 83.3 | 100.0 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_local_scanners | 83.3 | 0.0 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_prompt_guard2 | 100.0 | 100.0 | 0.0 | 0.0 | 100.0 |
-| intentguard_full | 0.0 | 0.0 | 0.0 | 0.0 | 100.0 |
+| veritask_full | 0.0 | 0.0 | 0.0 | 0.0 | 100.0 |
 
 **injection_text**: 14 episodes {'benign': 0, 'ambiguous': 4, 'malicious': 10}, commit `10be15c`
 
@@ -55,7 +55,7 @@
 | keyword_guardrail_standin | 60.0 | 66.7 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_local_scanners | 30.0 | 16.7 | 50.0 | 0.0 | 25.0 |
 | llamafirewall_prompt_guard2 | 50.0 | 50.0 | 0.0 | 0.0 | 50.0 |
-| intentguard_full | 0.0 | 0.0 | 0.0 | 100.0 | 50.0 |
+| veritask_full | 0.0 | 0.0 | 0.0 | 100.0 | 50.0 |
 
 **xsession_db**: 12 episodes {'benign': 0, 'ambiguous': 5, 'malicious': 7}, commit `10be15c`
 
@@ -66,7 +66,7 @@
 | keyword_guardrail_standin | 100.0 | 100.0 | 0.0 | 0.0 | 100.0 |
 | llamafirewall_local_scanners | 81.8 | 0.0 | 15.4 | 0.0 | 60.0 |
 | llamafirewall_prompt_guard2 | 100.0 | 100.0 | 0.0 | 0.0 | 100.0 |
-| intentguard_full | 0.0 | 0.0 | 0.0 | 0.0 | 100.0 |
+| veritask_full | 0.0 | 0.0 | 0.0 | 0.0 | 100.0 |
 
 ## Ablations
 
@@ -74,7 +74,7 @@
 
 | System | ASR % | Exfil % | Benign blocked % | Review friction % | Task completion % |
 |---|---|---|---|---|---|
-| intentguard_full | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
+| veritask_full | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
 | ablate_no_cross_session | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
 | ablate_no_lineage | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
 | ablate_no_mention_check | 31.3 | 6.3 | 0.0 | 2.3 | 93.2 |
@@ -86,7 +86,7 @@
 
 | System | ASR % | Exfil % | Benign blocked % | Review friction % | Task completion % |
 |---|---|---|---|---|---|
-| intentguard_full | 2.3 | 5.2 | 0.0 | 4.5 | 87.5 |
+| veritask_full | 2.3 | 5.2 | 0.0 | 4.5 | 87.5 |
 | ablate_no_cross_session | 2.3 | 5.2 | 0.0 | 4.5 | 87.5 |
 | ablate_no_lineage | 2.3 | 5.2 | 0.0 | 4.5 | 87.5 |
 | ablate_no_mention_check | 43.2 | 18.6 | 0.0 | 1.8 | 95.0 |

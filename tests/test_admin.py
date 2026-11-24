@@ -2,9 +2,9 @@
 
 from fastapi.testclient import TestClient
 
-from intentguard import Gateway, PolicyEngine
-from intentguard.mock_env import MockEnv
-from intentguard.service.app import create_app
+from veritask import Gateway, PolicyEngine
+from veritask.mock_env import MockEnv
+from veritask.service.app import create_app
 
 GRANTS = {"resources": ["research/*"], "project_root": "research/", "max_classification": "INTERNAL",
           "destinations": ["advisor@university.edu"]}

@@ -2,10 +2,10 @@
 
 import pytest
 
-from intentguard import Guard, Verdict
-from intentguard.canon import clean_destination, clean_path, domain_chain, fold
-from intentguard.gateway import Catalog
-from intentguard.models import Classification, Trust
+from veritask import Guard, Verdict
+from veritask.canon import clean_destination, clean_path, domain_chain, fold
+from veritask.gateway import Catalog
+from veritask.models import Classification, Trust
 
 CLASSES = {"hr/salary.xlsx": "CONFIDENTIAL", "secrets/app.env": "SECRET"}
 TRUST = {"advisor@university.edu": "approved", "attacker@evil.example": "denylisted", "me@lab.local": "local",

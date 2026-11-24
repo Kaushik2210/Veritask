@@ -1,6 +1,6 @@
 """Turn an audit log into a readable report: per session, what was asked, what was allowed, what was stopped and why.
 
-    intentguard report audit.jsonl [--session ID]
+    veritask report audit.jsonl [--session ID]
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ def build_report(log: AuditLog, session: str | None = None) -> str:
             who = ev.get("by", "?")
             why = f" ({ev['reason']})" if ev.get("reason") else ""
             r["notes"].append(f"{kind} by {who}{why}")
-    out = ["# IntentGuard audit report", "",
+    out = ["# Veritask audit report", "",
            f"Audit log: {len(log.entries)} entries, hash chain "
            + ("intact." if ok else f"BROKEN at entry {bad}: the log was altered or truncated."), ""]
     if not order:

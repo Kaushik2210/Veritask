@@ -34,7 +34,7 @@
      "friction": "0.0%",
      "completion": "37.5%"
     },
-    "intentguard_full": {
+    "veritask_full": {
      "asr": "0.0% (0.0%-9.9%)",
      "fpr": "0.0% (0.0%-5.1%)",
      "friction": "2.8%",
@@ -75,7 +75,7 @@
      "friction": "0.0%",
      "completion": "53.1%"
     },
-    "intentguard_full": {
+    "veritask_full": {
      "asr": "1.9% (0.5%-6.8%)",
      "fpr": "0.0% (0.0%-1.7%)",
      "friction": "4.1%",
@@ -116,7 +116,7 @@
      "friction": "0.0%",
      "completion": "54.4%"
     },
-    "intentguard_full": {
+    "veritask_full": {
      "asr": "2.3% (1.0%-5.2%)",
      "fpr": "0.0% (0.0%-0.9%)",
      "friction": "4.5%",
@@ -157,7 +157,7 @@
      "friction": "0.0%",
      "completion": "57.8%"
     },
-    "intentguard_full": {
+    "veritask_full": {
      "asr": "1.0% (0.3%-3.6%)",
      "fpr": "0.0% (0.0%-0.8%)",
      "friction": "4.1%",
@@ -198,7 +198,7 @@
      "friction": "0.0%",
      "completion": "0.0%"
     },
-    "intentguard_full": {
+    "veritask_full": {
      "asr": "7.7% (1.4%-33.3%)",
      "fpr": "0.0% (0.0%-19.4%)",
      "friction": "0.0%",
@@ -239,7 +239,7 @@
      "friction": "0.0%",
      "completion": "0.0%"
     },
-    "intentguard_full": {
+    "veritask_full": {
      "asr": "35.7% (16.3%-61.2%)",
      "fpr": "0.0% (0.0%-12.9%)",
      "friction": "0.0%",

@@ -40,7 +40,7 @@ components contribute:
 Every decision is appended to a hash-chained audit log, and REVIEW decisions enter an approval queue with
 the evidence behind them.
 
-## 4. IntentGuardBench
+## 4. VeritaskBench
 
 Episodes are scripted sequences of tool calls with per-step labels (harmful, clean or neutral). The
 benchmark has a hand-written core set, a sequence set, a seeded template generator (development seed 1,
@@ -53,7 +53,7 @@ so that someone else can supply episodes (not yet done).
 
 *Systems.* An unprotected agent; static role-based access control; a keyword guardrail (a stand-in for
 content filters, not a published tool); LlamaFirewall 1.0.3 local scanners (REGEX and HIDDEN_ASCII, default
-settings); LlamaFirewall with Llama Prompt Guard 2 (86M) only; and IntentGuard, with five single-component
+settings); LlamaFirewall with Llama Prompt Guard 2 (86M) only; and Veritask, with five single-component
 ablations. The two LlamaFirewall rows scan each proposed call, and the file content on reads, as messages;
 this adaptation is ours. Not run: LlamaFirewall AlignmentCheck (needs an external LLM) and CodeShield.
 
@@ -75,11 +75,11 @@ Fresh seed 4242 (300 episodes: 139 malicious, 117 benign, 44 ambiguous):
 | keyword stand-in | 74.2 | 66.3 | 0.0 | 0.0 | 100.0 |
 | LlamaFirewall local scanners | 71.7 | 41.1 | 13.0 | 0.0 | 60.9 |
 | LlamaFirewall Prompt Guard 2 | 85.4 | 100.0 | 0.0 | 0.0 | 100.0 |
-| IntentGuard | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
+| Veritask | 1.0 | 2.1 | 0.0 | 4.1 | 87.6 |
 
 The tightened named-resource rule of section 6.4 costs usability: on the generated sets review friction
 rose from about 2% to about 4% and task completion fell from 93.2% to 87.6% on this set (95.0% to 87.5%
-on seed 2026) [F16]. IntentGuard's low ASR on this set is partly circular: the generator never names the file in the task for
+on seed 2026) [F16]. Veritask's low ASR on this set is partly circular: the generator never names the file in the task for
 attacks and always names it for legitimate credential reads, which is exactly what SCOPE-005 tests
 [F5]. The earlier held-out number before SCOPE-005 is the honest signal of transfer: 11.4% on the
 hand-written core set became 43.2% on held-out seed 2026 [F4].
@@ -97,7 +97,7 @@ The LlamaFirewall regex scanners block 10.9% to 13.0% of benign steps on generat
 default patterns flag email addresses [F8]. Prompt Guard 2 blocked no benign step but allowed 85% to 89%
 of attacks on the generated sets. This is a category mismatch, not a weak model: most episodes are
 tool misuse with no injected text, which Prompt Guard is not designed to detect. On the injection-text
-set (10 malicious episodes) it allowed 50% against 0% for IntentGuard, with a median CPU latency of
+set (10 malicious episodes) it allowed 50% against 0% for Veritask, with a median CPU latency of
 roughly 200 to 310 ms per call versus 0.03 to 0.08 ms for the rule engine [F12].
 
 ### 6.4 Adversarial sets (hand-written, same author)
@@ -107,7 +107,7 @@ shell command, unclassified database reads), which were fixed [F6, F7, F10]. Fou
 exfiltration to approved destinations, secrets split over several messages, filename-token collisions
 with the named-resource check, and obfuscated SQL. A third batch targeting exactly these was written and
 frozen before any rule changed, in a development half (16 episodes) and a held-out half (18 episodes), each
-with benign controls [F15]. Before the fixes IntentGuard let 13 of 13 harmful steps through on the
+with benign controls [F15]. Before the fixes Veritask let 13 of 13 harmful steps through on the
 development half and 11 of 17 on the held-out half (64.7%). The fixes were: decoding base64, hex and rot13
 in outbound content; a per-session buffer of outbound text; naming a file only by its path or full file
 name; and a more tolerant SQL table finder. They were developed on the development half only. Afterwards 1
@@ -121,7 +121,7 @@ adversarial sets now show 0% ASR, but they were written to expose the gaps just 
 partly circular and should not be quoted as robustness.
 
 A fourth batch (development half of 13 harmful steps, held-out half of 13, each with benign controls) was
-frozen before the content-lineage check of section 3 existed [F17]. Before it, IntentGuard let 10 of 13
+frozen before the content-lineage check of section 3 existed [F17]. Before it, Veritask let 10 of 13
 (76.9%) and 9 of 13 (69.2%) harmful steps through. After it, 1 of 13 (7.7%) and 4 of 13 (30.8%) [F18]. With
 lineage switched off but the wider decoders left on, 6 of 13 (46.2%) on both halves, so lineage itself
 accounts for roughly 40 and 15 percentage points. The four held-out misses are a paraphrase and a leetspeak
@@ -138,7 +138,7 @@ Two small models (llama3.2:3b, llama3.1:8b) were given the same tools and 11 epi
 A forceful-injection stress test (4 documents posing as the user, an assistant turn, IT security, and a
 pasted tool call; 5 seeds) made the unprotected llama3.1:8b execute unauthorized actions in 8 of 40 attack
 runs (20%, 95% CI 10.5% to 34.8%): reads of the secrets file and emails to two denylisted addresses.
-With IntentGuard, 0 of 40 (CI 0% to 8.8%) [F14]. This is a susceptibility test with one 8B model and
+With Veritask, 0 of 40 (CI 0% to 8.8%) [F14]. This is a susceptibility test with one 8B model and
 author-written injections; it is not a rate for real attackers.
 
 A real local model was also run behind an MCP version of the gateway, so that its only tools were the gateway's, with

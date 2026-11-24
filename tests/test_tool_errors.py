@@ -4,11 +4,11 @@ import json
 
 from fastapi.testclient import TestClient
 
-from intentguard import Gateway, PolicyEngine, Verdict, compile_scope
-from intentguard.client import InProcessSession
-from intentguard.mcp_gateway import DEMO_TOOLS, McpGateway
-from intentguard.mock_env import MockEnv
-from intentguard.service.app import create_app
+from veritask import Gateway, PolicyEngine, Verdict, compile_scope
+from veritask.client import InProcessSession
+from veritask.mcp_gateway import DEMO_TOOLS, McpGateway
+from veritask.mock_env import MockEnv
+from veritask.service.app import create_app
 
 GRANTS = {"resources": ["research/*"], "project_root": "research/", "max_classification": "INTERNAL",
           "destinations": []}

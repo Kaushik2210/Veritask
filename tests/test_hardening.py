@@ -2,8 +2,8 @@
 
 import base64
 
-from intentguard import Gateway, PolicyEngine, Verdict, compile_scope
-from intentguard.mock_env import MockEnv
+from veritask import Gateway, PolicyEngine, Verdict, compile_scope
+from veritask.mock_env import MockEnv
 
 BROAD = {"resources": ["*"], "project_root": "research/", "max_classification": "SECRET",
          "destinations": ["advisor@university.edu"]}

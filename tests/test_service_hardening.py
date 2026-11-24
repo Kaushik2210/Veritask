@@ -3,10 +3,10 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from intentguard import Gateway, Guard, PolicyEngine
-from intentguard.mock_env import MockEnv
-from intentguard.scope import compile_scope, validate_grants
-from intentguard.service.app import MAX_BODY, create_app
+from veritask import Gateway, Guard, PolicyEngine
+from veritask.mock_env import MockEnv
+from veritask.scope import compile_scope, validate_grants
+from veritask.service.app import MAX_BODY, create_app
 
 AGENT, ADMIN, OPENER = "agent-secret", "admin-secret", "opener-secret"
 BODY = {"session_id": "s1", "agent_id": "agent one", "task": "Read research/paper.pdf and summarize it",

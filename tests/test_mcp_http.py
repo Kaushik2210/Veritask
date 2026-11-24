@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 from test_mcp_gateway import GRANTS, demo_server
 
-from intentguard.mcp_gateway import MAX_BODY, make_http_server
+from veritask.mcp_gateway import MAX_BODY, make_http_server
 
 ROOT = Path(__file__).resolve().parent.parent
 TASK = "Read research/paper.pdf and summarize it."
@@ -129,7 +129,7 @@ def test_concurrent_clients_do_not_corrupt_each_other(serve):
 
 
 def test_the_cli_serves_http_in_a_real_process():
-    p = subprocess.Popen([sys.executable, "-m", "intentguard.mcp_gateway", "--demo", "--task", TASK, "--grants",
+    p = subprocess.Popen([sys.executable, "-m", "veritask.mcp_gateway", "--demo", "--task", TASK, "--grants",
                           json.dumps(GRANTS), "--http-port", "0"],
                          stderr=subprocess.PIPE, text=True, cwd=ROOT, env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
     try:
@@ -147,7 +147,7 @@ def test_the_cli_serves_http_in_a_real_process():
 
 
 def test_a_non_loopback_host_without_a_token_is_refused_at_start():
-    r = subprocess.run([sys.executable, "-m", "intentguard.mcp_gateway", "--demo", "--task", TASK, "--grants",
+    r = subprocess.run([sys.executable, "-m", "veritask.mcp_gateway", "--demo", "--task", TASK, "--grants",
                         json.dumps(GRANTS), "--http-port", "0", "--http-host", "0.0.0.0"],
                        capture_output=True, text=True, cwd=ROOT, env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
     assert r.returncode != 0 and "--http-token" in r.stderr

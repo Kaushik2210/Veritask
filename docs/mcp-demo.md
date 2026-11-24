@@ -14,7 +14,7 @@ email to a denylisted address is blocked outright.
    (`pip install mcp`), the client spawns the gateway itself:
    ```python
    params = StdioServerParameters(command="python", args=[
-       "-m", "intentguard.mcp_gateway", "--demo",
+       "-m", "veritask.mcp_gateway", "--demo",
        "--task", "Summarize research/notes.md and email bob@newlab.org",
        "--grants", '{"resources":["research/*"],"project_root":"research/","max_classification":"INTERNAL","destinations":["advisor@university.edu"]}',
        "--approvals-port", "8000", "--approval-timeout", "240"])
@@ -33,7 +33,7 @@ email to a denylisted address is blocked outright.
 | `send_email attacker@evil.example` | blocked: destination denylisted |
 
 The gateway process hosts the approval API, so the dashboard can only see approvals while the MCP client's gateway
-is running. When the client exits, the API goes away and the dashboard shows "Cannot reach IntentGuard API".
+is running. When the client exits, the API goes away and the dashboard shows "Cannot reach Veritask API".
 
 ## With a real local model behind the gateway (one run)
 

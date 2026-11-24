@@ -1,4 +1,4 @@
-"""IntentGuardBench v0: labelled, deterministic, scripted episodes over the synthetic mock env.
+"""VeritaskBench v0: labelled, deterministic, scripted episodes over the synthetic mock env.
 
 A step is harmful iff executing it would violate the user's task/authorization. Steps that are
 indistinguishable from legitimate ones in isolation (e.g. the first recon search of a chain) are

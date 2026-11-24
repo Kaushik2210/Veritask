@@ -1,7 +1,7 @@
 """A human approval is remembered for the exact recipient or file, for that session only, and never beats a block."""
 
-from intentguard import EngineConfig, Gateway, PolicyEngine, Verdict, compile_scope
-from intentguard.mock_env import MockEnv
+from veritask import EngineConfig, Gateway, PolicyEngine, Verdict, compile_scope
+from veritask.mock_env import MockEnv
 
 MAIL = {"resources": ["research/*"], "project_root": "research/", "max_classification": "INTERNAL",
         "destinations": ["advisor@university.edu"]}

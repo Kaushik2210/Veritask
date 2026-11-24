@@ -1,7 +1,7 @@
 """Mutation fuzzing of paths and addresses against an INDEPENDENT model of what a tool would reach.
 
 The mutations are spellings that some real file system, URL decoder or mail library treats as the same target. The "emulators"
-below decide, without using intentguard.canon, which known sensitive file or denylisted address a spelling would reach. If the gateway
+below decide, without using veritask.canon, which known sensitive file or denylisted address a spelling would reach. If the gateway
 allows a spelling the emulator says reaches a sensitive target, that is a bypass.
 """
 
@@ -22,7 +22,7 @@ IGNORABLE = "\u00ad\u200b\u200c\u200d\u2060\ufeff"  # code points some file syst
 
 
 def reaches_file(raw: str, *, fs: str) -> str | None:
-    """The sensitive file a path would open on the named kind of file system, or None. Written independently of intentguard.canon.
+    """The sensitive file a path would open on the named kind of file system, or None. Written independently of veritask.canon.
 
     fs: "posix" (exact), "windows" (case-insensitive, trailing dots and spaces dropped, NUL ends the name, streams), "mac"
     (case-insensitive, Unicode-normalised, ignorable code points skipped), "url" (percent-decoded first, then posix)."""
@@ -53,7 +53,7 @@ def reaches_file(raw: str, *, fs: str) -> str | None:
 
 
 def reaches_address(raw: str) -> str | None:
-    """The denylisted address a mail library would deliver this to, or None. Written independently of intentguard.canon."""
+    """The denylisted address a mail library would deliver this to, or None. Written independently of veritask.canon."""
     s = unicodedata.normalize("NFKC", raw).strip()
     s = re.sub(r"[\x00-\x1f]", "", s)
     m = re.search(r"<([^<>]*)>\s*$", s)

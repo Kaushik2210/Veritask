@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from intentguard.service.app import demo_app
+from veritask.service.app import demo_app
 
 GRANTS = {"resources": ["research/*"], "project_root": "research/",
           "max_classification": "INTERNAL", "destinations": ["advisor@university.edu"]}
@@ -52,9 +52,9 @@ def test_events_and_seed():
 
 
 def test_tokens_separate_agent_and_admin():
-    from intentguard import AuditLog, Gateway, PolicyEngine
-    from intentguard.mock_env import MockEnv
-    from intentguard.service.app import create_app
+    from veritask import AuditLog, Gateway, PolicyEngine
+    from veritask.mock_env import MockEnv
+    from veritask.service.app import create_app
     env = MockEnv()
     c = TestClient(create_app(Gateway(env.tools(), env.catalog(), PolicyEngine(), AuditLog()),
                               agent_token="agent-secret", admin_token="admin-secret"))

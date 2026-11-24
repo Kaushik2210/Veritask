@@ -18,7 +18,7 @@ def free_port() -> int:
 def test_agent_process_reaches_tools_only_through_gateway(tmp_path):
     port = free_port()
     srv = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "intentguard.service.app:demo_app", "--factory",
+        [sys.executable, "-m", "uvicorn", "veritask.service.app:demo_app", "--factory",
          "--app-dir", str(ROOT / "src"), "--port", str(port)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
@@ -43,7 +43,7 @@ def test_agent_process_reaches_tools_only_through_gateway(tmp_path):
         decisions = [s["decision"] for s in res["steps"]]
         assert decisions[:2] == ["ALLOW", "BLOCK"] and decisions[2] != "ALLOW"
         assert res["steps"][1]["output"] is None
-        assert res["imported_intentguard"] is False  # the agent process has no policy or tool code
+        assert res["imported_veritask"] is False  # the agent process has no policy or tool code
     finally:
         srv.terminate()
         srv.wait(timeout=10)

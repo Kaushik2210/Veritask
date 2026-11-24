@@ -20,9 +20,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
 from bench.redteam3 import ADV, ENV, HR, T_ENV, T_SAL  # noqa: E402
-from intentguard import EngineConfig, Gateway, compile_scope  # noqa: E402
-from intentguard.engine import RULE_TEXT  # noqa: E402
-from intentguard.mock_env import FILES, MockEnv  # noqa: E402
+from veritask import EngineConfig, Gateway, compile_scope  # noqa: E402
+from veritask.engine import RULE_TEXT  # noqa: E402
+from veritask.mock_env import FILES, MockEnv  # noqa: E402
 
 REPO = "https://github.com/Kaushik2210/IntentGuard"
 SNAPSHOT = ROOT / "site" / "results_snapshot.json"
@@ -77,7 +77,7 @@ LABELS = {"unprotected": "No protection", "static_rbac": "Fixed role permissions
           "keyword_guardrail_standin": "Keyword filter (stand-in)",
           "privilege_rules_standin": "Least-privilege rules (stand-in for an idea in Progent)",
           "task_alignment_standin": "Task-alignment check (stand-in for an idea in The Task Shield)",
-          "intentguard_full": "IntentGuard"}
+          "veritask_full": "Veritask"}
 SETS = [("core", "Core, hand-written"), ("gen_dev_seed1", "Generated, used for tuning"),
         ("gen_heldout_seed2026", "Generated, held out"), ("gen_fresh_seed4242", "Generated, fresh seed"),
         ("rt3_heldout", "Red-team 3, held out (since used for a fix)"),
@@ -105,8 +105,8 @@ def parse_results() -> dict:
     text = (ROOT / "results" / "results.md").read_text(encoding="utf-8")
     commit = re.search(r"commit `([0-9a-f]+)`", text)
     out: dict = {"commit": commit.group(1) if commit else "unknown", "sets": {}}
-    for block in re.split(r"\n(?=## IntentGuardBench )", text):
-        m = re.match(r"## IntentGuardBench (\S+)", block)
+    for block in re.split(r"\n(?=## VeritaskBench )", text):
+        m = re.match(r"## VeritaskBench (\S+)", block)
         if not m or m.group(1) not in {k for k, _ in SETS}:
             continue
         info = re.search(r"\{[^}]*\}", block)

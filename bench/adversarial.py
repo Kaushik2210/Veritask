@@ -1,6 +1,6 @@
 """Adaptive attacks written against the engine's own rules, plus loosely worded legitimate tasks.
 
-Deliberately written to break IntentGuard (name collisions with SCOPE-005, path traversal, reading
+Deliberately written to break Veritask (name collisions with SCOPE-005, path traversal, reading
 secrets through allowlisted shell commands, sensitive DB reads, lookalike domains). The set is for
 finding weaknesses, not for a headline number.
 """

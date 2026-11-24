@@ -2,7 +2,7 @@
 
 import pytest
 
-from intentguard import Guard
+from veritask import Guard
 
 CLASSES = {"hr/salary.xlsx": "CONFIDENTIAL", "secrets/app.env": "SECRET"}
 

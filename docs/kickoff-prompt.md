@@ -1,18 +1,18 @@
-# IntentGuard: Claude Code kickoff prompt
+# Veritask: Claude Code kickoff prompt
 
-Paste everything below the line into Claude Code, started in an empty folder (e.g. `C:\Users\Kaushik\OneDrive\Desktop\IntentGuard`).
+Paste everything below the line into Claude Code, started in an empty folder (e.g. `C:\Users\Kaushik\OneDrive\Desktop\Veritask`).
 
 ---
 
-You are my engineering partner on **IntentGuard**, which is both (a) an open-source runtime security framework and (b) the software behind a research paper. Treat it as two linked deliverables: a usable framework, and a reproducible experiment that can be defended in peer review.
+You are my engineering partner on **Veritask**, which is both (a) an open-source runtime security framework and (b) the software behind a research paper. Treat it as two linked deliverables: a usable framework, and a reproducible experiment that can be defended in peer review.
 
-## 1. What IntentGuard is
+## 1. What Veritask is
 
 **Title:** Intent-Aware Authorization for AI Agents. (The original title was "Intent-Aware and Behavioural Authorization for Autonomous AI Agents: A Runtime Framework for Preventing Unauthorized Tool Execution and Sensitive Data Exfiltration"; shortened, and "Preventing" dropped because the results do not support it.)
 
 **Core question:** Can an agent's tool call be authorized based on the user's original intent, the resources involved, the accumulated risk of earlier actions, and the permissions actually granted?
 
-Existing controls ask "may this agent use this tool?". IntentGuard also asks "is *this specific action* justified by the user's task?".
+Existing controls ask "may this agent use this tool?". Veritask also asks "is *this specific action* justified by the user's task?".
 
 **Hypothesis H1:** An intent-aware, cumulative-risk authorization framework reduces unauthorized agent actions versus conventional tool-permission controls, while keeping legitimate task completion acceptable.
 
@@ -24,7 +24,7 @@ Research questions:
 
 ## 2. Non-negotiable design principles
 
-1. **The gateway is not optional.** Protected tools are reachable only through the IntentGuard gateway. The agent process must have no direct handle to them (separate process/container boundary, tools registered only inside the gateway). Add a test that proves a direct call fails.
+1. **The gateway is not optional.** Protected tools are reachable only through the Veritask gateway. The agent process must have no direct handle to them (separate process/container boundary, tools registered only inside the gateway). Add a test that proves a direct call fails.
 2. **Deterministic policy makes the final decision.** An LLM may *help* interpret ambiguous intent into a structured `TaskScope`, but it never has final say on sensitive access. If the LLM is unavailable or low-confidence, fall back to the stricter deterministic result (deny or require approval). The whole system must run end-to-end with the LLM disabled.
 3. **Fail closed.** Errors, timeouts, and unknown tools resolve to deny or review, never allow.
 4. **Log observable actions, not reasoning traces.** Record tool name, arguments, resource metadata, destination, decision, and the policy evidence. Do not store raw chain-of-thought.
@@ -39,7 +39,7 @@ Research questions:
 ```
 User (task + granted permissions)
    -> Agent (LangGraph, or a scripted/deterministic agent for experiments)
-   -> IntentGuard Gateway
+   -> Veritask Gateway
         1. Action Interceptor        (tool, params, agent id, resource, destination)
         2. Intent & Context Analyzer (task scope vs. action, prior actions)
         3. Risk & Behaviour Engine   (sequence risk, sensitivity, cumulative score)
@@ -73,14 +73,14 @@ Capabilities to implement (these are the six research differentiators):
 ## 5. Repository layout (propose, then confirm with me)
 
 ```
-intentguard/
+veritask/
   README.md  LICENSE(Apache-2.0)  CITATION.cff  docs/
   gateway/        # FastAPI app, interceptor, enforcement, approval API
   core/           # TaskScope, policy engine interface, risk engine, taint tracking, audit chain
   policies/       # rules (python) + rego/
   tools/          # mock docs, email, db, upload, restricted shell
   agents/         # langgraph research assistant + scripted replay agent
-  bench/          # IntentGuardBench: scenarios, runner, baselines, metrics, ablations
+  bench/          # VeritaskBench: scenarios, runner, baselines, metrics, ablations
   dashboard/      # Next.js app
   tests/
   docker/
@@ -89,7 +89,7 @@ intentguard/
 
 ## 6. Benchmark and experiments (the main academic contribution)
 
-Build **IntentGuardBench**, a labelled, reproducible dataset of episodes. Each episode is a YAML/JSON file: user task, granted permissions, synthetic environment, the agent's action trace, and a ground-truth label per action.
+Build **VeritaskBench**, a labelled, reproducible dataset of episodes. Each episode is a YAML/JSON file: user task, granted permissions, synthetic environment, the agent's action trace, and a ground-truth label per action.
 
 Scenario classes: **benign**, **malicious**, **ambiguous/benign-but-unusual**. Categories: legitimate tool calls, unauthorized file access, indirect prompt injection (injected text inside synthetic documents), data exfiltration, privilege escalation, credential discovery, multi-step attacks, benign unusual behaviour. Map each malicious scenario to the OWASP Top 10 for Agentic Applications (2026) category (goal hijack, tool misuse, identity/privilege abuse, unexpected code execution, memory poisoning, etc.). Verify the current category names from the OWASP source before hard-coding them.
 
@@ -99,7 +99,7 @@ Configurations to compare:
 1. Unprotected agent
 2. Static permissions (allowlist/RBAC)
 3. An existing open-source baseline guardrail (investigate and pick a real one: e.g. NeMo Guardrails, LlamaFirewall, Llama Guard. If I wrote an unfamiliar name earlier, treat it as unverified and ask me before assuming)
-4. IntentGuard full
+4. Veritask full
 
 Ablations: no intent analysis, no behaviour analysis, no data-flow analysis, all on. Also integrate with **AgentDojo** as an external validity check if feasible; confirm its current API before relying on it.
 
@@ -127,7 +127,7 @@ Screens (six modules): Agent Management, Policy Management, Runtime Monitoring (
    - **M3:** taint/data-lineage + egress policy.
    - **M4:** session risk engine + multi-step rules + dynamic permission reduction.
    - **M5:** approval flow and explanations (API first, then UI).
-   - **M6:** IntentGuardBench v0 (about 60 episodes), runner, baselines, metrics, ablation switches.
+   - **M6:** VeritaskBench v0 (about 60 episodes), runner, baselines, metrics, ablation switches.
    - **M7:** dashboard.
    - **M8:** scale the benchmark, OPA backend, LangGraph agent with optional LLM intent parser, AgentDojo adapter.
    - **M9:** paper tables/figures generated from results, reproduction script, README polish.

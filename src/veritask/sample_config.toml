@@ -1,4 +1,4 @@
-# IntentGuard configuration. Every section is optional; the defaults match the built-in demo.
+# Veritask configuration. Every section is optional; the defaults match the built-in demo.
 
 [engine]
 quarantine_at = 1.0        # cumulative risk at which a session is frozen

@@ -1,13 +1,13 @@
-"""The `intentguard` command.
+"""The `veritask` command.
 
-    intentguard init                      write a documented intentguard.toml to edit
-    intentguard check-config FILE         validate a config file and say what it sets
-    intentguard serve --demo              run the HTTP service with the mock tools (dashboard backend)
-    intentguard serve --upstream "CMD" --config intentguard.toml
+    veritask init                      write a documented veritask.toml to edit
+    veritask check-config FILE         validate a config file and say what it sets
+    veritask serve --demo              run the HTTP service with the mock tools (dashboard backend)
+    veritask serve --upstream "CMD" --config veritask.toml
                                           run the service in front of an existing MCP server
-    intentguard mcp ...                   run the MCP gateway (same options as `python -m intentguard.mcp_gateway`)
-    intentguard verify-audit FILE         check a persisted audit log's hash chain
-    intentguard report FILE [--session ID]  readable summary of an audit log, per session
+    veritask mcp ...                   run the MCP gateway (same options as `python -m veritask.mcp_gateway`)
+    veritask verify-audit FILE         check a persisted audit log's hash chain
+    veritask report FILE [--session ID]  readable summary of an audit log, per session
 """
 
 from __future__ import annotations
@@ -32,9 +32,9 @@ def cmd_init(a: argparse.Namespace) -> int:
     if target.exists() and not a.force:
         print(f"{target} already exists; use --force to overwrite", file=sys.stderr)
         return 1
-    target.write_text(resources.files("intentguard").joinpath("sample_config.toml").read_text(encoding="utf-8"),
+    target.write_text(resources.files("veritask").joinpath("sample_config.toml").read_text(encoding="utf-8"),
                       encoding="utf-8")
-    print(f"wrote {target}. Edit it, then: intentguard check-config {target}")
+    print(f"wrote {target}. Edit it, then: veritask check-config {target}")
     return 0
 
 
@@ -81,16 +81,16 @@ def build_service(a: argparse.Namespace):
     """The FastAPI app for `serve`. Raises ConfigError or ValueError for a bad setup."""
     from .service.app import add_demo_seed, create_app  # needs the 'api' extra (fastapi, uvicorn)
     cfg = load_config(a.config) if a.config else Config()
-    agent_token = a.agent_token or os.environ.get("INTENTGUARD_AGENT_TOKEN")
-    admin_token = a.admin_token or os.environ.get("INTENTGUARD_ADMIN_TOKEN")
-    opener_token = getattr(a, "opener_token", None) or os.environ.get("INTENTGUARD_OPENER_TOKEN")
+    agent_token = a.agent_token or os.environ.get("VERITASK_AGENT_TOKEN")
+    admin_token = a.admin_token or os.environ.get("VERITASK_ADMIN_TOKEN")
+    opener_token = getattr(a, "opener_token", None) or os.environ.get("VERITASK_OPENER_TOKEN")
     if agent_token and not opener_token:
         print("note: without --opener-token the agent token can also open sessions, so whatever holds it can choose its "
               "own grants. Give the process that talks to the model only the agent token.", file=sys.stderr)
     if a.host not in LOOPBACK and not (agent_token and admin_token):
         raise ValueError(f"refusing to listen on {a.host} without both --agent-token and --admin-token "
-                         "(or INTENTGUARD_AGENT_TOKEN / INTENTGUARD_ADMIN_TOKEN)")
-    audit = AuditLog(a.audit_file or os.environ.get("INTENTGUARD_AUDIT_FILE"))
+                         "(or VERITASK_AGENT_TOKEN / VERITASK_ADMIN_TOKEN)")
+    audit = AuditLog(a.audit_file or os.environ.get("VERITASK_AUDIT_FILE"))
     engine = PolicyEngine(cfg.engine)
     if a.demo:
         env = MockEnv()
@@ -102,7 +102,7 @@ def build_service(a: argparse.Namespace):
             raise ValueError("--upstream needs --config with at least one [tools.<name>] section")
         gw, _ = build_proxy(StdioUpstream(split_command(a.upstream)), cfg.proxy_dict(), engine)
         gw.audit = audit
-    db = getattr(a, "db", None) or os.environ.get("INTENTGUARD_DB")
+    db = getattr(a, "db", None) or os.environ.get("VERITASK_DB")
     if db:
         from .store import SessionStore
         n = gw.attach_store(SessionStore(db))
@@ -121,7 +121,7 @@ def cmd_serve(a: argparse.Namespace) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     import uvicorn
-    if not (a.admin_token or os.environ.get("INTENTGUARD_ADMIN_TOKEN")):
+    if not (a.admin_token or os.environ.get("VERITASK_ADMIN_TOKEN")):
         print("warning: no admin token, so anyone who can reach this port can approve actions "
               "(fine on localhost only)", file=sys.stderr)
     uvicorn.run(app, host=a.host, port=a.port, log_level="warning")
@@ -134,11 +134,11 @@ def main(argv: list[str] | None = None) -> int:
         from .mcp_gateway import main as mcp_main
         mcp_main(argv[1:])
         return 0
-    ap = argparse.ArgumentParser(prog="intentguard", description=__doc__,
+    ap = argparse.ArgumentParser(prog="veritask", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("init", help="write a documented config file")
-    p.add_argument("path", nargs="?", default="intentguard.toml")
+    p.add_argument("path", nargs="?", default="veritask.toml")
     p.add_argument("--force", action="store_true")
     p.set_defaults(fn=cmd_init)
     p = sub.add_parser("check-config", help="validate a config file")
@@ -158,12 +158,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8000)
     p.add_argument("--audit-file")
-    p.add_argument("--db", help="SQLite file that keeps sessions across restarts (or INTENTGUARD_DB)")
+    p.add_argument("--db", help="SQLite file that keeps sessions across restarts (or VERITASK_DB)")
     p.add_argument("--agent-token")
     p.add_argument("--admin-token")
     p.add_argument("--opener-token", help="token that may open sessions (task and grants); keep it out of the agent process")
     p.set_defaults(fn=cmd_serve)
-    sub.add_parser("mcp", help="run the MCP gateway (see `intentguard mcp --help`)")
+    sub.add_parser("mcp", help="run the MCP gateway (see `veritask mcp --help`)")
     a = ap.parse_args(argv)
     if a.cmd == "serve" and a.demo == bool(a.upstream):
         ap.error("serve: choose exactly one of --demo or --upstream")

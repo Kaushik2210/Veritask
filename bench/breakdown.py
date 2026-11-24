@@ -18,7 +18,7 @@ from bench.redteam7 import build_rt7  # noqa: E402
 from bench.run import run_system  # noqa: E402
 
 
-def main(system: str = "intentguard_full") -> None:
+def main(system: str = "veritask_full") -> None:
     for name, build in (("rt_dev", build_rt_dev), ("rt_heldout", build_rt_heldout),
                         ("rt3_dev", build_rt3_dev), ("rt3_heldout", build_rt3_heldout), ("rt4_variants", build_rt4), ("rt5_semantic", build_rt5), ("rt6_spelling", build_rt6), ("rt7_shell_sql", build_rt7)):
         rows = run_system(system, build())

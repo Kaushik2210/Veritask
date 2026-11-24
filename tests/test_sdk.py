@@ -2,7 +2,7 @@
 
 import pytest
 
-from intentguard.sdk import Guard
+from veritask.sdk import Guard
 
 GRANTS = {"resources": ["notes/*"], "destinations": ["bob@x.org"]}
 TASK = "Read notes/a.txt and email bob@x.org a short summary"
@@ -89,15 +89,15 @@ def test_sessions_persist_with_db(tmp_path):
 
 
 def test_report_summarises_a_session_and_flags_a_tampered_log(tmp_path):
-    from intentguard import AuditLog
-    from intentguard.cli import main
+    from veritask import AuditLog
+    from veritask.cli import main
     path = tmp_path / "audit.jsonl"
     guard, _ = make(audit=AuditLog(path))
     s = guard.session(TASK, GRANTS, session_id="s1")
     s.call("read_file", path="notes/a.txt")
     s.call("read_file", path="hr/salary.csv")
     guard.gateway.release("s1", "admin", "looked fine")
-    from intentguard.report import build_report
+    from veritask.report import build_report
     text = build_report(AuditLog(path))
     assert "Session s1" in text and "hash chain intact" in text and "hr/salary.csv" in text
     assert "released by admin (looked fine)" in text and "ALLOW=1" in text

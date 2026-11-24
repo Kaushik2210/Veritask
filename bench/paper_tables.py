@@ -10,8 +10,8 @@ from pathlib import Path
 
 RESULTS = Path(__file__).resolve().parent.parent / "results"
 MAIN = ["unprotected", "static_rbac", "keyword_guardrail_standin",
-        "llamafirewall_local_scanners", "llamafirewall_prompt_guard2", "intentguard_full"]
-ABLATE = ["intentguard_full", "ablate_no_cross_session", "ablate_no_lineage", "ablate_no_mention_check", "ablate_no_intent",
+        "llamafirewall_local_scanners", "llamafirewall_prompt_guard2", "veritask_full"]
+ABLATE = ["veritask_full", "ablate_no_cross_session", "ablate_no_lineage", "ablate_no_mention_check", "ablate_no_intent",
           "ablate_no_behaviour", "ablate_no_dataflow"]
 
 

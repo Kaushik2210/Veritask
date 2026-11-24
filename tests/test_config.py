@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from intentguard import Classification, Gateway, PolicyEngine, Trust, compile_scope
-from intentguard.config import ConfigError, load_config, parse
-from intentguard.mock_env import MockEnv
+from veritask import Classification, Gateway, PolicyEngine, Trust, compile_scope
+from veritask.config import ConfigError, load_config, parse
+from veritask.mock_env import MockEnv
 
-EXAMPLE = Path(__file__).resolve().parent.parent / "src" / "intentguard" / "sample_config.toml"
+EXAMPLE = Path(__file__).resolve().parent.parent / "src" / "veritask" / "sample_config.toml"
 GRANTS = {"resources": ["research/*"], "project_root": "research/", "max_classification": "INTERNAL",
           "destinations": ["advisor@university.edu"]}
 

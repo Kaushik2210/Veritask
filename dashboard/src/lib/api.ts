@@ -83,7 +83,7 @@ export function usePoll<T>(path: string, ms = 2000) {
       setData(await r.json());
       setError(null);
     } catch {
-      setError(`Cannot reach IntentGuard API at ${API}`);
+      setError(`Cannot reach Veritask API at ${API}`);
     }
   }, [path]);
   useEffect(() => {

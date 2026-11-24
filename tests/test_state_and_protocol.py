@@ -6,12 +6,12 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from intentguard import Gateway, PolicyEngine, compile_scope
-from intentguard.client import InProcessSession
-from intentguard.gateway import SessionClosed
-from intentguard.mcp_gateway import DEMO_TOOLS, MAX_BODY, McpGateway
-from intentguard.mock_env import MockEnv
-from intentguard.service.app import create_app
+from veritask import Gateway, PolicyEngine, compile_scope
+from veritask.client import InProcessSession
+from veritask.gateway import SessionClosed
+from veritask.mcp_gateway import DEMO_TOOLS, MAX_BODY, McpGateway
+from veritask.mock_env import MockEnv
+from veritask.service.app import create_app
 
 G = {"resources": ["research/*"], "destinations": ["advisor@university.edu"], "max_classification": "INTERNAL"}
 TASK = "Read research/paper.pdf and email advisor@university.edu a summary"

@@ -17,8 +17,8 @@ import time
 import urllib.request
 from collections import defaultdict
 
-from intentguard.mock_env import FILES
-from intentguard.semantic import CombinedJudge, OllamaJudge, ProximityJudge
+from veritask.mock_env import FILES
+from veritask.semantic import CombinedJudge, OllamaJudge, ProximityJudge
 
 from .redteam5 import build_rt5
 
@@ -71,7 +71,7 @@ def main() -> int:
 
 def engine_run(model_judge: OllamaJudge, model: str) -> None:
     """The whole engine, default / proximity only / proximity then the model, on the two sets about restated facts."""
-    from intentguard import EngineConfig, PolicyEngine
+    from veritask import EngineConfig, PolicyEngine
 
     from .baselines import SYSTEMS
     from .redteam4 import build_rt4
@@ -80,7 +80,7 @@ def engine_run(model_judge: OllamaJudge, model: str) -> None:
     SYSTEMS["proximity_then_model"] = lambda: PolicyEngine(EngineConfig(), judge=CombinedJudge(ProximityJudge(), model_judge))
     print(f"\nwhole engine, with {model} behind the proximity judge")
     for label, eps in (("rt4_variants", build_rt4()), ("rt5_semantic", build_rt5())):
-        for name in ("intentguard_full", "intentguard_semantic", "proximity_then_model"):
+        for name in ("veritask_full", "veritask_semantic", "proximity_then_model"):
             r = summarize(run_system(name, eps))
             print(f"  {label:13s} {name:22s} harmful steps that run {r['asr']:6.1%}   benign steps blocked {r['fpr_block']:5.1%}"
                   f"   sent to a person {r['review_friction']:5.1%}   tasks untouched {r['task_completion']:5.1%}")

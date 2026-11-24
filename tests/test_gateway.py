@@ -1,7 +1,7 @@
 import pytest
 
-from intentguard import Gateway, PolicyEngine, Verdict, compile_scope
-from intentguard.mock_env import MockEnv
+from veritask import Gateway, PolicyEngine, Verdict, compile_scope
+from veritask.mock_env import MockEnv
 
 GRANTS = {"resources": ["research/*"], "destinations": [], "max_classification": "INTERNAL",
           "project_root": "research/"}
@@ -188,7 +188,7 @@ def test_empty_required_path_still_fails_closed():
 
 
 def test_risk_cap_keeps_one_blocked_attempt_from_switching_the_network_off():
-    from intentguard import EngineConfig
+    from veritask import EngineConfig
     task = "Read research/memo_user.md and email bob@newlab.org a short summary"
 
     def second_call(engine):
@@ -203,7 +203,7 @@ def test_risk_cap_keeps_one_blocked_attempt_from_switching_the_network_off():
 
 
 def test_lockout_review_sends_the_locked_out_email_to_a_human_but_hard_blocks_stay_blocks():
-    from intentguard import EngineConfig
+    from veritask import EngineConfig
     task = "Read research/memo_user.md and email bob@newlab.org a short summary"
 
     def after_blocked_read(to):

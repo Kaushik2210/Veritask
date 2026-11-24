@@ -10,12 +10,12 @@ import { CopyButton, Reveal, VerdictPill } from "@/components/ui";
 import { allSteps, data, shortCall } from "@/lib/data";
 
 const CLI = `git clone ${data.repo}.git
-cd IntentGuard
+cd Veritask
 pip install -e ".[dev]"
-intentguard serve --demo        # http://127.0.0.1:8000
+veritask serve --demo        # http://127.0.0.1:8000
 python -m pytest -q`;
 
-const SDK = `from intentguard.sdk import Guard
+const SDK = `from veritask.sdk import Guard
 
 guard = Guard(classes={"hr/salary.csv": "CONFIDENTIAL"}, trust={"bob@x.org": "approved"})
 
@@ -67,7 +67,7 @@ export default function Page() {
                 Your agent should do what you asked. <em className="serif">And only that.</em>
               </h1>
               <p className="lede">
-                You told it to summarise your notes. It shouldn&rsquo;t also be emailing your payroll to a stranger because a file said so. IntentGuard sits between the agent and its
+                You told it to summarise your notes. It shouldn&rsquo;t also be emailing your payroll to a stranger because a file said so. Veritask sits between the agent and its
                 tools and checks every call against your task, the data, the destination and the session so far, before anything runs.
               </p>
               <div className="cta">
@@ -213,7 +213,7 @@ export default function Page() {
       <footer>
         <div className="wrap">
           <p>
-            IntentGuard is a research prototype, not a product, and has not been audited. Built from commit <code>{data.build}</code>. The replay, the flying packets and the audit ledger come from the real engine through{" "}
+            Veritask is a research prototype, not a product, and has not been audited. Built from commit <code>{data.build}</code>. The replay, the flying packets and the audit ledger come from the real engine through{" "}
             <code>site/build_site.py</code>; the compose box is a tested port of one rule. The page loads no third-party scripts and sends nothing anywhere.
           </p>
         </div>

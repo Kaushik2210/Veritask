@@ -1,4 +1,4 @@
-"""One config file for IntentGuard (TOML, read with the standard library).
+"""One config file for Veritask (TOML, read with the standard library).
 
     [engine]                  # EngineConfig fields: quarantine_at, low_confidence, carry_decay, lineage_k, ...
     quarantine_at = 1.0

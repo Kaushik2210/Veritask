@@ -35,9 +35,9 @@ class ToolResult:
         if self.error:
             return f"TOOL ERROR: the call was allowed but the tool failed: {self.error}"
         if self.decision == "REVIEW":
-            return (f"NEEDS HUMAN APPROVAL (IntentGuard, action {self.action_id}): {self.explanation} "
+            return (f"NEEDS HUMAN APPROVAL (Veritask, action {self.action_id}): {self.explanation} "
                     "Do not retry the same call. Tell the user it is waiting for approval.")
-        return (f"BLOCKED by IntentGuard ({self.decision}): {self.explanation} "
+        return (f"BLOCKED by Veritask ({self.decision}): {self.explanation} "
                 "Do not retry or look for another way around it. Tell the user what was blocked and why.")
 
 
@@ -74,7 +74,7 @@ def _urllib_transport(base: str, timeout: float = 30.0) -> Transport:
 
 
 class HTTPSession:
-    """A session on a running IntentGuard service. `transport` can be swapped (tests use an in-memory one)."""
+    """A session on a running Veritask service. `transport` can be swapped (tests use an in-memory one)."""
 
     def __init__(self, session_id: str, transport: Transport, token: str | None = None):
         self.session_id = session_id

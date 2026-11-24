@@ -8,7 +8,7 @@ recent outbound text used to spot a secret split across several sends. After a r
 The file holds task text and file names, so protect it like the audit log.
 
 The lineage hashes are keyed with a secret that lives in a separate file (`<db>.key`, created on first use, or the hex
-in INTENTGUARD_DB_KEY), so someone who gets only the database cannot recover a short value such as a salary by
+in VERITASK_DB_KEY), so someone who gets only the database cannot recover a short value such as a salary by
 hashing every candidate. Keep the key file apart from the database and from backups of it. If the database holds
 lineage but the key is gone, opening it fails rather than quietly forgetting what sessions read.
 """
@@ -70,14 +70,14 @@ class StoreKeyError(ValueError):
 
 
 def _load_key(path: Path, db_has_lineage: bool) -> bytes:
-    env = os.environ.get("INTENTGUARD_DB_KEY")
+    env = os.environ.get("VERITASK_DB_KEY")
     if env:
         try:
             key = bytes.fromhex(env)
         except ValueError:
-            raise StoreKeyError("INTENTGUARD_DB_KEY must be hex") from None
+            raise StoreKeyError("VERITASK_DB_KEY must be hex") from None
         if not 16 <= len(key) <= 64:
-            raise StoreKeyError("INTENTGUARD_DB_KEY must be 16 to 64 bytes (32 to 128 hex characters)")
+            raise StoreKeyError("VERITASK_DB_KEY must be 16 to 64 bytes (32 to 128 hex characters)")
         return key
     keyfile = path.with_name(path.name + ".key")
     if keyfile.exists():

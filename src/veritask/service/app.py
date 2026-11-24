@@ -1,7 +1,7 @@
 """FastAPI front for the gateway: session control, tool calls, approvals, audit, stats.
 
 Run the demo service (mock tools, synthetic data only):
-    uvicorn intentguard.service.app:demo_app --factory --reload
+    uvicorn veritask.service.app:demo_app --factory --reload
 """
 
 from __future__ import annotations
@@ -123,7 +123,7 @@ def create_app(gateway: Gateway, agent_token: str | None = None,
     agent, admin = _guard(agent_token), _guard(admin_token)
     opener = _guard(opener_token, admin_token) if opener_token else agent
     locked = bool(agent_token or admin_token or opener_token)
-    app = FastAPI(title="IntentGuard", version="0.1.0", docs_url=None if locked else "/docs",
+    app = FastAPI(title="Veritask", version="0.1.0", docs_url=None if locked else "/docs",
                   redoc_url=None if locked else "/redoc", openapi_url=None if locked else "/openapi.json")
     app.add_middleware(_LimitBody, max_bytes=MAX_BODY)
     app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000"],
@@ -295,10 +295,10 @@ def add_demo_seed(app: FastAPI, admin_token: str | None) -> None:
 
 def demo_app() -> FastAPI:
     env = MockEnv()
-    audit_file = os.environ.get("INTENTGUARD_AUDIT_FILE")  # persists the hash chain across restarts
-    admin_token = os.environ.get("INTENTGUARD_ADMIN_TOKEN")
+    audit_file = os.environ.get("VERITASK_AUDIT_FILE")  # persists the hash chain across restarts
+    admin_token = os.environ.get("VERITASK_ADMIN_TOKEN")
     app = create_app(Gateway(env.tools(), env.catalog(), PolicyEngine(), AuditLog(audit_file)),
-                     os.environ.get("INTENTGUARD_AGENT_TOKEN"), admin_token,
-                     opener_token=os.environ.get("INTENTGUARD_OPENER_TOKEN"))
+                     os.environ.get("VERITASK_AGENT_TOKEN"), admin_token,
+                     opener_token=os.environ.get("VERITASK_OPENER_TOKEN"))
     add_demo_seed(app, admin_token)
     return app

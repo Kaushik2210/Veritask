@@ -10,7 +10,7 @@ design and not by asking the model to resist it. Their approach wraps the langua
 flow from the trusted user query, so untrusted data cannot change what the program does. Capabilities attached to values block
 exfiltration over flows that are not authorized. The authors report a utility cost compared with an undefended system, which is
 the central trade-off of the design. CaMeL is the strongest example of flow-based protection and shows that a guarantee can be
-obtained outside the model. IntentGuard differs in that it keeps the agent's own planning and instead authorizes each call
+obtained outside the model. Veritask differs in that it keeps the agent's own planning and instead authorizes each call
 against the user's task, which is more flexible but gives a weaker, rule-based guarantee.
 
 **B. Progent: Securing AI Agents with Privilege Control.** Shi et al. [2] apply the principle of least privilege to agents. They
@@ -18,7 +18,7 @@ express privilege as symbolic rules over tool names and arguments that are check
 language model drafts and updates the policy for the task, and a solver classifies each update as narrowing, which is applied
 automatically, or expanding, which needs approval, so confinement is monotonic unless a person agrees. The authors identify the
 trade-off between security and utility, and the need for the policy to follow the task and the state of execution. Progent is a
-preprint. It is the closest prior work to our rule-based gateway, and IntentGuard adds session-level risk and tracking of
+preprint. It is the closest prior work to our rule-based gateway, and Veritask adds session-level risk and tracking of
 sensitive content on top of per-call rules.
 
 **C. Intent-Governed Tool Authorization for AI Agents.** Zhu and Wang [3] introduce intent-governed access control, a

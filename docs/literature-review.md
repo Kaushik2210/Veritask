@@ -1,4 +1,4 @@
-# Literature survey and worksheet draft: IntentGuard
+# Literature survey and worksheet draft: Veritask
 
 Prepared 2026-11-01 for the Postgraduate Research Worksheet (Research Methodology).
 
@@ -6,7 +6,7 @@ Prepared 2026-11-01 for the Postgraduate Research Worksheet (Research Methodolog
 
 - **I cannot query Scopus.** It needs institutional login and a licensed API key. The 50 papers below come from an open paper index (arXiv-centred) plus my own knowledge of the field. They are ranked by *relevance to this research problem and by how foundational they are*, not by Scopus citation counts.
 - **Check each paper in Scopus yourself.** Many 2025-26 items are preprints and may not be Scopus-indexed yet. Use the search string in section 1 and keep only the ones Scopus returns. The "Venue" column is from my memory for the well-known papers and is marked `verify`. Confirm it before citing. Do not cite anything from this file without opening the paper.
-- **Novelty warning.** Several 2026 papers (items 9, 10, 11, 12, 13, 14 below) overlap with your "intent-based authorization" claim. Your literature review must position IntentGuard against them. Do not claim "no one has done intent-based authorization".
+- **Novelty warning.** Several 2026 papers (items 9, 10, 11, 12, 13, 14 below) overlap with your "intent-based authorization" claim. Your literature review must position Veritask against them. Do not claim "no one has done intent-based authorization".
 
 ## 1. Scopus search string (run this yourself)
 
@@ -130,7 +130,7 @@ Strong alternates: Fides (#22) if you want the information-flow angle, IGAC (#9)
 
 **2. Complication and impact ("However... Therefore..."):** However, current controls grant static permissions and judge each action in isolation, so an injected or misaligned agent can chain individually permitted actions (read a sensitive file, then send it out) [STAC 2025; AgentHazard 2026]. Therefore sensitive data can leak and unauthorized actions can run even when per-call filters pass, and reported defences are often validated only on static benchmarks [Adaptive Evaluation 2026].
 
-**3. Proposed intervention:** IntentGuard, a gateway that is the only holder of the tools. It compiles the user's task into a scope, scores cumulative risk across steps, tracks data lineage, reduces permissions as risk grows, and sends risky actions to a human with an explanation. Every decision goes into a tamper-evident log.
+**3. Proposed intervention:** Veritask, a gateway that is the only holder of the tools. It compiles the user's task into a scope, scores cumulative risk across steps, tracks data lineage, reduces permissions as risk grows, and sends risky actions to a human with an explanation. Every decision goes into a tamper-evident log.
 
 **Part 2: Core flow**
 - *Input(s):* user task text and grants, each proposed tool call (tool, arguments, resource, destination), tool outputs, resource and destination catalogue (classification, trust).
@@ -150,7 +150,7 @@ Strong alternates: Fides (#22) if you want the information-flow angle, IGAC (#9)
 
 - *Opening:* "LLM-based agents increasingly act through tools, which turns prompt injection from a content problem into an authorization problem [1, 2]."
 - *Gap:* "Prior runtime defences either bound privileges per task [11, 12, 9] or track data flow [21, 22], but evaluate them mainly on static benchmarks [48, 49]. It remains unclear how they behave when combined with cumulative behavioural risk under independent evaluation."
-- *Contribution list:* "(1) a runtime authorization gateway combining ...; (2) IntentGuardBench with dev, held-out and fresh episode sets and paired ablations; (3) an audit of where each mechanism fails."
+- *Contribution list:* "(1) a runtime authorization gateway combining ...; (2) VeritaskBench with dev, held-out and fresh episode sets and paired ablations; (3) an audit of where each mechanism fails."
 - *Limitations paragraph:* state same-author episode bias, template intent compiler, small LLM study, no Scopus-ranked comparison to Progent and CaMeL runs.
 
 ## 7. Next steps for you

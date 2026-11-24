@@ -19,8 +19,8 @@ from bench.episodes import BENIGN, Episode, S, build, build_seq, build_xs  # noq
 from bench.generate import generate  # noqa: E402
 from bench.redteam2 import build_rt_dev, build_rt_heldout  # noqa: E402
 from bench.redteam3 import build_rt3_dev, build_rt3_heldout  # noqa: E402
-from intentguard import EngineConfig, Gateway, PolicyEngine, Verdict, compile_scope  # noqa: E402
-from intentguard.mock_env import MockEnv  # noqa: E402
+from veritask import EngineConfig, Gateway, PolicyEngine, Verdict, compile_scope  # noqa: E402
+from veritask.mock_env import MockEnv  # noqa: E402
 
 
 def constructed_repeats() -> list[Episode]:

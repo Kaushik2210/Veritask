@@ -90,7 +90,7 @@ export function ErrorBar({ msg }: { msg: string | null }) {
   return (
     <div role="alert" className="mb-4 rounded-lg border border-line bg-panel px-4 py-3 text-[13px] text-review">
       {msg}. Start it with{" "}
-      <code className="font-mono">uvicorn intentguard.service.app:demo_app --factory</code>.
+      <code className="font-mono">uvicorn veritask.service.app:demo_app --factory</code>.
     </div>
   );
 }

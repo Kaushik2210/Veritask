@@ -23,7 +23,7 @@ export default function Topbar() {
             <path d="M16 3l11 4v8c0 7-5 12-11 14C10 27 5 22 5 15V7z" fill="var(--accent)" />
             <path d="M11 16l4 4 7-8" fill="none" stroke="var(--accent-ink)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          IntentGuard
+          Veritask
         </a>
         <nav className="nav" aria-label="Page sections">
           <a href="#replay">Replay</a>

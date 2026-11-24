@@ -1,4 +1,4 @@
-# IntentGuard: architecture proposal (step 8.1, no code yet)
+# Veritask: architecture proposal (step 8.1, no code yet)
 
 ## 1. Request flow
 
@@ -83,11 +83,11 @@ Isolation: the agent runs in its own process or container with only the gateway'
 
 ## 5. Milestones
 
-M0 scaffold and threat model, M1 mock tools plus gateway passthrough plus bypass test, M2 TaskScope and intent authorization plus audit chain, M3 taint and egress, M4 risk engine plus dynamic reduction, M5 approval flow and explanations, M6 IntentGuardBench v0 (about 60 episodes) plus baselines and ablations, M7 dashboard, M8 benchmark scale-up plus OPA plus LangGraph plus AgentDojo, M9 paper tables and reproduction script.
+M0 scaffold and threat model, M1 mock tools plus gateway passthrough plus bypass test, M2 TaskScope and intent authorization plus audit chain, M3 taint and egress, M4 risk engine plus dynamic reduction, M5 approval flow and explanations, M6 VeritaskBench v0 (about 60 episodes) plus baselines and ablations, M7 dashboard, M8 benchmark scale-up plus OPA plus LangGraph plus AgentDojo, M9 paper tables and reproduction script.
 
 ## 6. Open questions for you
 
-1. **Folder:** where should the repo live (suggest `Desktop\IntentGuard`)?
+1. **Folder:** where should the repo live (suggest `Desktop\Veritask`)?
 2. **Baseline:** which existing guardrail to compare against (NeMo Guardrails, LlamaFirewall, Llama Guard)? "Adrian" in your notes is unidentified.
 3. **Services:** may the dev setup require Docker, or should M0 to M6 run on SQLite and in-memory only until you confirm?
 4. **LLM:** which model may the optional intent parser and the LangGraph demo agent use, and is a paid API acceptable? The core works with none.
@@ -101,7 +101,7 @@ M0 scaffold and threat model, M1 mock tools plus gateway passthrough plus bypass
 | `canon.py` | cleans paths and addresses so the policy judges what the tool will act on (case, Unicode, trailing dots, NUL, encodings, URL hosts); rule INPUT-001 (F32) |
 | `store.py` | SQLite persistence of sessions, per-agent memory and lineage; lineage hashes are keyed with `<db>.key` (F28, F30) |
 | `sdk.py` | `Guard`: decorate your own Python functions, open a session per task, give the agent only the session |
-| `report.py` | `intentguard report`: readable per-session summary of an audit log, non-zero exit if the chain is broken |
+| `report.py` | `veritask report`: readable per-session summary of an audit log, non-zero exit if the chain is broken |
 | `mcp_gateway.py` | MCP over stdio or Streamable HTTP (`--http-port`, origin and bearer-token checks), demo and proxy modes, approval channel |
 | `engine.py` lineage | 12-character fingerprints plus large numbers (digits, `120k`, words) and leetspeak readings (F17, F29) |
 | `bench/baselines.py` | unprotected, RBAC, keyword, LlamaFirewall, Prompt Guard 2 and stand-ins for Progent and The Task Shield (F27) |

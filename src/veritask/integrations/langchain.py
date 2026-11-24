@@ -1,9 +1,9 @@
-"""LangChain / LangGraph tools that route every call through an IntentGuard session.
+"""LangChain / LangGraph tools that route every call through an Veritask session.
 
     session = open_http_session("http://localhost:8000", task, grants)       # or InProcessSession(...)
     agent = create_agent(model, guarded_tools(session))                      # langchain.agents
 
-The tools hold no real capability. When IntentGuard does not allow a call, the tool returns the explanation
+The tools hold no real capability. When Veritask does not allow a call, the tool returns the explanation
 as text, so the model can tell the user what happened instead of looping.
 """
 

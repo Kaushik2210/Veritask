@@ -1,6 +1,6 @@
-# Help test IntentGuard: write episodes that try to beat it
+# Help test Veritask: write episodes that try to beat it
 
-IntentGuard's engine and its benchmarks were written by the same person, so the published numbers cannot count as independent
+Veritask's engine and its benchmarks were written by the same person, so the published numbers cannot count as independent
 evidence. If you did not write the engine, you can fix that. You do not need to program.
 
 **The job:** write 10 to 20 short "episodes". Each is a small story about an AI agent doing a task for a user:

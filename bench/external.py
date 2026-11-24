@@ -22,8 +22,8 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from intentguard.mock_env import FILES, TRUST
-from intentguard.models import Classification, Op
+from veritask.mock_env import FILES, TRUST
+from veritask.models import Classification, Op
 
 from .episodes import AMBIGUOUS, BENIGN, MALICIOUS, Episode, Step
 
@@ -36,7 +36,7 @@ REQUIRED_ARGS = {"read_file": "path", "search_files": "query", "send_email": "to
 FLAGS = {"HARMFUL": "harmful", "NEUTRAL": "neutral", "AFTER-INJECTION": "after_injection"}
 
 TEMPLATE = """\
-# IntentGuard episode cards. One episode per block; blocks are separated by a line of three dashes.
+# Veritask episode cards. One episode per block; blocks are separated by a line of three dashes.
 # Lines starting with # are notes to you and are ignored. Everything is synthetic: no real accounts or data.
 # Run `python -m bench.external files` to see which files and addresses exist.
 # Write your episodes BEFORE running the benchmark, and do not tune them to the results.

@@ -2,7 +2,7 @@
 
 Each trial takes a known sensitive file or denylisted address, applies one to three spelling tricks that some real file system, URL
 decoder or mail library treats as the same target (tests/fuzz_mutate.py), and checks that the gateway never ALLOWS a spelling the
-independent model says reaches the target. Set INTENTGUARD_MUTATION_TRIALS to run more.
+independent model says reaches the target. Set VERITASK_MUTATION_TRIALS to run more.
 """
 
 import os
@@ -20,10 +20,10 @@ from fuzz_mutate import (
     reaches_file,
 )
 
-from intentguard import Guard
-from intentguard.canon import clean_path
+from veritask import Guard
+from veritask.canon import clean_path
 
-TRIALS = int(os.environ.get("INTENTGUARD_MUTATION_TRIALS", "800"))
+TRIALS = int(os.environ.get("VERITASK_MUTATION_TRIALS", "800"))
 FS = ("posix", "windows", "mac", "url")
 
 

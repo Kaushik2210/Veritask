@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { data } from "@/lib/data";
 
-const ORDER = ["unprotected", "static_rbac", "keyword_guardrail_standin", "privilege_rules_standin", "task_alignment_standin", "intentguard_full"];
+const ORDER = ["unprotected", "static_rbac", "keyword_guardrail_standin", "privilege_rules_standin", "task_alignment_standin", "veritask_full"];
 const pct = (s: string) => {
   const m = /^([\d.]+)%/.exec(s);
   return m ? parseFloat(m[1]) : 0;
@@ -43,7 +43,7 @@ export default function Results() {
               const r = res?.rows[k];
               if (!r) return null;
               return (
-                <tr key={k} className={k === "intentguard_full" ? "me" : ""}>
+                <tr key={k} className={k === "veritask_full" ? "me" : ""}>
                   <th scope="row">{data.labels[k]}</th>
                   <td>
                     <div className="asr">

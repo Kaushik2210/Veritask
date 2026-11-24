@@ -33,7 +33,7 @@ Problem: LLM agents now call tools (email, files, databases, shell) on a user's 
 hidden instruction in that content (indirect prompt injection) can make the agent take actions the user never
 authorized, or leak sensitive data. Static per-tool permissions cannot say whether THIS call is justified by THIS task,
 and per-call filters miss attacks made of individually allowed steps.
-System ("IntentGuard"): a gateway that holds the tools instead of the agent. For each proposed call it decides ALLOW,
+System ("Veritask"): a gateway that holds the tools instead of the agent. For each proposed call it decides ALLOW,
 REVIEW (a human decides) or BLOCK with an explanation, using deterministic rules over: (1) task scope compiled from the
 user's task and grants, (2) data sensitivity and destination trust, (3) data lineage (fingerprints of sensitive data the
 session read, matched against outbound content after decoding), (4) cumulative behavioural risk across steps with
@@ -45,7 +45,7 @@ friction and task completion? RQ4 how should such systems be evaluated honestly?
 
 PART 2: MY PROJECT'S RESULTS (use only these, with their limits)
 - Benchmark (synthetic, scripted agents, same author as the system): on three seeded generated sets (150 to 300
-  episodes each) IntentGuard let 1.0% to 2.3% of harmful steps execute, against 100% unprotected. On the two larger
+  episodes each) Veritask let 1.0% to 2.3% of harmful steps execute, against 100% unprotected. On the two larger
   sets: about 71% to 76% for static role-based access, 74% to 81% for a keyword guardrail, about 72% for LlamaFirewall's
   default local scanners (which also blocked 11% to 13% of benign steps), and 85% to 89% for Llama Prompt Guard 2 (an
   injection classifier, so many tool-misuse attacks give it nothing to flag). Caveat: part of this is circular because the
@@ -103,8 +103,8 @@ For EACH set, deliver these three parts, in this order:
  A. LITERATURE REVIEW (700 to 900 words)
     - 3 or 4 themes, each a short paragraph that synthesises (does not list) 4 to 6 verified sources, drawn mainly
       from my 20 and topped up with others only where needed.
-    - A comparison table: source | what it does | evaluation used | main limitation | relation to IntentGuard.
-    - A "gap" paragraph that states precisely what remains open, and where IntentGuard's contribution is genuinely
+    - A comparison table: source | what it does | evaluation used | main limitation | relation to Veritask.
+    - A "gap" paragraph that states precisely what remains open, and where Veritask's contribution is genuinely
       different from the closest prior work (name it, e.g. Progent, CaMeL, IGAC, Task Shield) rather than claiming novelty.
 
  B. INTRODUCTION (400 to 500 words)

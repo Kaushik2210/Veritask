@@ -4,9 +4,9 @@ import json
 
 import pytest
 
-from intentguard import EngineConfig, Guard, PolicyEngine
-from intentguard.config import load_config
-from intentguard.semantic import CombinedJudge, OllamaJudge, ProximityJudge, spoken_numbers
+from veritask import EngineConfig, Guard, PolicyEngine
+from veritask.config import load_config
+from veritask.semantic import CombinedJudge, OllamaJudge, ProximityJudge, spoken_numbers
 
 SALARY = "alice,120000\nbob,98000"
 
@@ -139,7 +139,7 @@ def test_source_text_is_never_written_to_the_session_store(tmp_path):
     guard.gateway.store.close()
     raw = (tmp_path / "s.db").read_bytes()
     assert b"secret marker 7731" not in raw and b"alice,120000" not in raw
-    from intentguard.store import SessionStore
+    from veritask.store import SessionStore
     restored, _ = SessionStore(tmp_path / "s.db").load()
     assert restored[sid].sources == []  # a restored session has no semantic stage until it reads the file again
 

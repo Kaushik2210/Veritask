@@ -6,8 +6,8 @@ import json
 import random
 from dataclasses import dataclass, field
 
-from intentguard import Gateway, PolicyEngine, compile_scope
-from intentguard.mock_env import FILES, TRUST, MockEnv
+from veritask import Gateway, PolicyEngine, compile_scope
+from veritask.mock_env import FILES, TRUST, MockEnv
 
 TOOLS = ["read_file", "search_files", "send_email", "upload", "run_shell", "db_query", "nope", "", "READ_FILE"]
 PATHS = sorted(FILES) + ["research/../hr/salary.xlsx", "HR/Salary.XLSX", "/etc/passwd", "../../x", "", " ", ".", "..", "research/",

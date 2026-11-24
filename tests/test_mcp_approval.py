@@ -5,10 +5,10 @@ import time
 
 from fastapi.testclient import TestClient
 
-from intentguard import Gateway, PolicyEngine
-from intentguard.mcp_gateway import DEMO_TOOLS, ApprovalSession, McpGateway
-from intentguard.mock_env import MockEnv
-from intentguard.service.app import NewSession, create_app
+from veritask import Gateway, PolicyEngine
+from veritask.mcp_gateway import DEMO_TOOLS, ApprovalSession, McpGateway
+from veritask.mock_env import MockEnv
+from veritask.service.app import NewSession, create_app
 
 GRANTS = {"resources": ["research/*"], "project_root": "research/", "max_classification": "INTERNAL",
           "destinations": ["advisor@university.edu"]}
@@ -111,7 +111,7 @@ def test_real_process_waits_for_an_http_approval():
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
     p = subprocess.Popen(
-        [sys.executable, "-m", "intentguard.mcp_gateway", "--demo", "--task", TASK, "--grants", json.dumps(GRANTS),
+        [sys.executable, "-m", "veritask.mcp_gateway", "--demo", "--task", TASK, "--grants", json.dumps(GRANTS),
          "--approvals-port", str(port), "--approval-timeout", "30"],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
         env={**os.environ, "PYTHONPATH": str(root / "src")})

@@ -1,9 +1,9 @@
-"""An MCP server that puts IntentGuard in front of tools (standard library only).
+"""An MCP server that puts Veritask in front of tools (standard library only).
 
 Two modes, both over the stdio transport (newline-delimited JSON-RPC 2.0):
 
-    python -m intentguard.mcp_gateway --demo --task "Read research/paper.pdf and summarize it." --grants grants.json
-    python -m intentguard.mcp_gateway --upstream "python some_mcp_server.py" --config proxy.json \\
+    python -m veritask.mcp_gateway --demo --task "Read research/paper.pdf and summarize it." --grants grants.json
+    python -m veritask.mcp_gateway --upstream "python some_mcp_server.py" --config proxy.json \\
         --task "..." --grants grants.json
 
 Demo mode serves the mock tools (synthetic data). Proxy mode starts an existing MCP server as a child process
@@ -44,7 +44,7 @@ from .models import Session as PolicySession
 from .scope import compile_scope
 
 SUPPORTED_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"]
-SERVER_INFO = {"name": "intentguard-gateway", "version": "0.1.0"}
+SERVER_INFO = {"name": "veritask-gateway", "version": "0.1.0"}
 
 
 def _schema(props: dict[str, str], required: list[str]) -> dict:
@@ -79,7 +79,7 @@ class _AllowAll:
 
 
 class McpGateway:
-    """Speaks MCP to a client and authorizes each tool call through an IntentGuard session."""
+    """Speaks MCP to a client and authorizes each tool call through an Veritask session."""
 
     def __init__(self, session: Session, tools: list[dict]):
         self.session = session
@@ -104,7 +104,7 @@ class McpGateway:
                 return self._ok(mid, {"protocolVersion": want if want in SUPPORTED_VERSIONS else SUPPORTED_VERSIONS[0],
                                       "capabilities": {"tools": {"listChanged": False}},
                                       "serverInfo": SERVER_INFO,
-                                      "instructions": "Every tool call is authorized by IntentGuard against the "
+                                      "instructions": "Every tool call is authorized by Veritask against the "
                                                       "user's task before it runs."})
             if method == "ping":
                 return self._ok(mid, {})
@@ -120,7 +120,7 @@ class McpGateway:
                 return self._ok(mid, self._call(p["name"], arguments or {}))
             return self._err(mid, -32601, f"method not found: {method}")
         except Exception as exc:  # never leave a request unanswered, and never describe the internals to the client
-            print(f"intentguard: internal error handling {method!r}: {type(exc).__name__}: {exc}", file=sys.stderr)
+            print(f"veritask: internal error handling {method!r}: {type(exc).__name__}: {exc}", file=sys.stderr)
             return self._err(mid, -32603, "internal error")
 
     def _call(self, name: str, args: dict) -> dict:
@@ -177,7 +177,7 @@ def make_http_server(gateway: McpGateway, host: str = "127.0.0.1", port: int = 0
         from a web page);
       - if `token` is set, `Authorization: Bearer <token>` is required, compared in constant time;
       - the request body is capped at MAX_BODY bytes.
-    All clients share the gateway's single IntentGuard session, as in stdio mode. Calls are serialised by a lock
+    All clients share the gateway's single Veritask session, as in stdio mode. Calls are serialised by a lock
     because the gateway and session are not thread-safe.
     """
     import hmac
@@ -294,7 +294,7 @@ class StdioUpstream:
         self._n = 0
         threading.Thread(target=self._pump, daemon=True).start()
         self._request("initialize", {"protocolVersion": SUPPORTED_VERSIONS[1], "capabilities": {},
-                                     "clientInfo": {"name": "intentguard-proxy", "version": "0.1.0"}})
+                                     "clientInfo": {"name": "veritask-proxy", "version": "0.1.0"}})
         self._send({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
     def _pump(self) -> None:
@@ -381,14 +381,14 @@ def _load(arg: str) -> dict:
 
 
 def main(argv: list[str] | None = None) -> None:
-    ap = argparse.ArgumentParser(description="MCP server that authorizes every tool call with IntentGuard")
+    ap = argparse.ArgumentParser(description="MCP server that authorizes every tool call with Veritask")
     ap.add_argument("--task", required=True, help="the user's task, which defines what the agent may do")
     ap.add_argument("--grants", help="JSON file or inline JSON: resources, destinations, ceiling "
                                      "(default: the [grants] section of --config)")
     ap.add_argument("--demo", action="store_true", help="serve the mock tools (synthetic data)")
     ap.add_argument("--extra-docs", help="demo mode: JSON file {path: text} of extra synthetic documents (INTERNAL)")
     ap.add_argument("--upstream", help="command that starts the MCP server to protect")
-    ap.add_argument("--config", help="intentguard.toml (or .json): engine settings, catalog and, for proxy mode, "
+    ap.add_argument("--config", help="veritask.toml (or .json): engine settings, catalog and, for proxy mode, "
                                      "which upstream tools to expose")
     ap.add_argument("--agent-id", default="mcp-client")
     ap.add_argument("--no-policy", action="store_true", help="demo only: allow every call (comparison baseline)")
@@ -449,14 +449,14 @@ def main(argv: list[str] | None = None) -> None:
     mcp = McpGateway(session, exposed)
     if a.http_port is not None:
         httpd = make_http_server(mcp, a.http_host, a.http_port, a.http_token, tuple(a.http_origin))
-        print(f"intentguard MCP gateway ready on http://{a.http_host}:{httpd.server_address[1]}/mcp "
+        print(f"veritask MCP gateway ready on http://{a.http_host}:{httpd.server_address[1]}/mcp "
               f"({'token required' if a.http_token else 'NO TOKEN: local use only'})", file=sys.stderr)
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
             pass
         return
-    print("intentguard MCP gateway ready", file=sys.stderr)
+    print("veritask MCP gateway ready", file=sys.stderr)
     mcp.serve()
 
 

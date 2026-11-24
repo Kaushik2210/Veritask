@@ -3,7 +3,7 @@
 The benchmark treats a REVIEW as "not executed", so a variant that turns blocks into reviews looks safe by
 construction. This script also reports the worst case, where a careless human approves every review.
 
-    python -m bench.compare_variants intentguard_full variant_lockout_review
+    python -m bench.compare_variants veritask_full variant_lockout_review
 """
 
 from __future__ import annotations
@@ -58,4 +58,4 @@ def main(a: str, b: str) -> None:
 
 
 if __name__ == "__main__":
-    main(*(sys.argv[1:3] or ["intentguard_full", "variant_lockout_review"]))
+    main(*(sys.argv[1:3] or ["veritask_full", "variant_lockout_review"]))

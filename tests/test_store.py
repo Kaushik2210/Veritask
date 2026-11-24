@@ -2,9 +2,9 @@
 
 import pytest
 
-from intentguard import Gateway, Verdict, compile_scope
-from intentguard.mock_env import MockEnv
-from intentguard.store import SessionStore
+from veritask import Gateway, Verdict, compile_scope
+from veritask.mock_env import MockEnv
+from veritask.store import SessionStore
 
 GRANTS = {"resources": ["research/*", "finance/*"], "destinations": ["bob@x.org"], "max_classification": "CONFIDENTIAL"}
 
@@ -80,7 +80,7 @@ def test_release_clears_saved_agent_risk(tmp_path):
 def test_service_keeps_serving_a_session_after_a_restart(tmp_path):
     from fastapi.testclient import TestClient
 
-    from intentguard.service.app import create_app
+    from veritask.service.app import create_app
     db = tmp_path / "s.db"
     grants = {"resources": ["research/*"], "max_classification": "INTERNAL"}
     gw, _ = make(db)
@@ -106,7 +106,7 @@ def _read_budget(db):
 def test_a_number_cannot_be_recovered_by_hashing_candidates(tmp_path):
     import struct
 
-    from intentguard.engine import _fp
+    from veritask.engine import _fp
     db = tmp_path / "s.db"
     _read_budget(db)
     raw = db.read_bytes()
@@ -121,7 +121,7 @@ def test_each_database_gets_its_own_key(tmp_path):
 
 
 def test_losing_the_key_fails_loudly_instead_of_forgetting_lineage(tmp_path):
-    from intentguard.store import StoreKeyError
+    from veritask.store import StoreKeyError
     db = tmp_path / "s.db"
     _read_budget(db)
     (tmp_path / "s.db.key").unlink()
@@ -130,26 +130,26 @@ def test_losing_the_key_fails_loudly_instead_of_forgetting_lineage(tmp_path):
 
 
 def test_a_key_from_the_environment_is_used_and_checked(tmp_path, monkeypatch):
-    from intentguard.store import StoreKeyError
-    monkeypatch.setenv("INTENTGUARD_DB_KEY", "ab" * 32)
+    from veritask.store import StoreKeyError
+    monkeypatch.setenv("VERITASK_DB_KEY", "ab" * 32)
     store = SessionStore(tmp_path / "s.db")
     assert store.key == bytes.fromhex("ab" * 32) and not (tmp_path / "s.db.key").exists()
     store.close()
-    monkeypatch.setenv("INTENTGUARD_DB_KEY", "zz")
+    monkeypatch.setenv("VERITASK_DB_KEY", "zz")
     with pytest.raises(StoreKeyError):
         SessionStore(tmp_path / "t.db")
-    monkeypatch.setenv("INTENTGUARD_DB_KEY", "ab")
+    monkeypatch.setenv("VERITASK_DB_KEY", "ab")
     with pytest.raises(StoreKeyError):
         SessionStore(tmp_path / "t.db")
 
 
 def test_hashes_made_with_another_key_never_match():
-    from intentguard import PolicyEngine
-    from intentguard.models import Classification, Session
+    from veritask import PolicyEngine
+    from veritask.models import Classification, Session
     e1, e2 = PolicyEngine(), PolicyEngine()
     e1.set_fingerprint_key(b"k" * 32)
     e2.set_fingerprint_key(b"j" * 32)
-    from intentguard.models import TaskScope
+    from veritask.models import TaskScope
     s = Session("s", "a", TaskScope("t", set(), []))
     e1.remember(s, "alice earns 120000 per year in the lab", Classification.CONFIDENTIAL)
     mine = s.lineage[0][1]

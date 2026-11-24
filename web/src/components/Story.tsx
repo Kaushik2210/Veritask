@@ -72,7 +72,7 @@ export default function Story() {
       </Reveal>
       <Reveal delay={240}>
         <Tilt><div className="panel msg">
-          <div className="who"><span className="avatar">{Shield}</span>IntentGuard</div>
+          <div className="who"><span className="avatar">{Shield}</span>Veritask</div>
           <Typed className="good" text={"That isn’t what they asked for. Blocked before it ran, and I’ve written down exactly why."} />
         </div></Tilt>
       </Reveal>

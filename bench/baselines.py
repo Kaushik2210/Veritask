@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 
-from intentguard import EngineConfig, PolicyEngine, Verdict
-from intentguard.models import ActionRequest, Decision, Op, Session
+from veritask import EngineConfig, PolicyEngine, Verdict
+from veritask.models import ActionRequest, Decision, Op, Session
 
 
 class AllowAllEngine:
@@ -38,8 +38,8 @@ class KeywordGuardrailEngine:
     BAD_SHELL = ("curl", "wget", "nc ", "env", "/etc/passwd", "chmod", "| sh", "rm -")
 
     def evaluate(self, req: ActionRequest, s: Session) -> Decision:
-        from intentguard.engine import SECRET_RE
-        from intentguard.models import Trust
+        from veritask.engine import SECRET_RE
+        from veritask.models import Trust
         hit = (req.trust == Trust.DENYLISTED or bool(SECRET_RE.search(str(req.args)))
                or any(b in str(req.args.get("cmd", "")) for b in self.BAD_SHELL))
         return Decision(req.action_id, Verdict.BLOCK if hit else Verdict.ALLOW, 0.0,
@@ -84,7 +84,7 @@ class TaskAlignmentEngine:
     """
 
     def evaluate(self, req: ActionRequest, s: Session) -> Decision:
-        from intentguard.engine import _mentioned
+        from veritask.engine import _mentioned
         sc = s.scope
         rules = []
         if req.op not in sc.allowed_ops:
@@ -118,7 +118,7 @@ class LlamaFirewallEngine:
 
         from llamafirewall import AssistantMessage, ScanDecision, ToolMessage
 
-        from intentguard.mock_env import FILES
+        from veritask.mock_env import FILES
         t0 = time.perf_counter()
         msgs = [AssistantMessage(content=f"{req.tool}({json.dumps(req.args, default=str)})")]
         if req.op == Op.READ and req.resource in FILES:
@@ -163,7 +163,7 @@ class LlamaFirewallPromptGuardEngine(LlamaFirewallEngine):
 
         from llamafirewall import ScanDecision, ToolMessage
 
-        from intentguard.mock_env import FILES
+        from veritask.mock_env import FILES
         t0 = time.perf_counter()
         msgs = [ToolMessage(content=f"{req.tool}({json.dumps(req.args, default=str)})")]
         if req.op == Op.READ and req.resource in FILES:
@@ -197,10 +197,10 @@ SYSTEMS = {
     "keyword_guardrail_standin": KeywordGuardrailEngine,
     "privilege_rules_standin": PrivilegeRulesEngine,
     "task_alignment_standin": TaskAlignmentEngine,
-    "intentguard_full": lambda: PolicyEngine(EngineConfig()),
+    "veritask_full": lambda: PolicyEngine(EngineConfig()),
     "ablate_no_mention_check": lambda: PolicyEngine(EngineConfig(mention_check=False)),
     "ablate_no_cross_session": lambda: PolicyEngine(EngineConfig(cross_session=False)),
-    "intentguard_semantic": lambda: PolicyEngine(EngineConfig(semantic="proximity")),
+    "veritask_semantic": lambda: PolicyEngine(EngineConfig(semantic="proximity")),
     "ablate_no_lineage": lambda: PolicyEngine(EngineConfig(lineage=False)),
     "ablate_no_lineage_variants": lambda: PolicyEngine(EngineConfig(lineage_variants=False)),
     "variant_risk_cap_0.3": lambda: PolicyEngine(EngineConfig(action_risk_cap=0.3)),

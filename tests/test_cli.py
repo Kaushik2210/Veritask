@@ -1,4 +1,4 @@
-"""The `intentguard` command: init, check-config, verify-audit, and the service built from a config file."""
+"""The `veritask` command: init, check-config, verify-audit, and the service built from a config file."""
 
 import argparse
 import json
@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from intentguard.audit import AuditLog
-from intentguard.cli import build_service, main
-from intentguard.config import load_config
+from veritask.audit import AuditLog
+from veritask.cli import build_service, main
+from veritask.config import load_config
 
 FAKE = Path(__file__).with_name("fake_mcp_server.py")
 
@@ -22,7 +22,7 @@ def ns(**kw):
 
 
 def test_init_writes_a_config_that_validates_and_refuses_to_overwrite(tmp_path, capsys):
-    target = tmp_path / "intentguard.toml"
+    target = tmp_path / "veritask.toml"
     assert main(["init", str(target)]) == 0 and load_config(target).grants["resources"] == ["research/*"]
     assert main(["init", str(target)]) == 1 and "already exists" in capsys.readouterr().err
     target.write_text("junk")

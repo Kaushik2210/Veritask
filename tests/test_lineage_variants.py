@@ -2,8 +2,8 @@
 
 import pytest
 
-from intentguard import EngineConfig, Guard, PolicyEngine
-from intentguard.engine import _leet, _numbers
+from veritask import EngineConfig, Guard, PolicyEngine
+from veritask.engine import _leet, _numbers
 
 SALARY = "alice,120000\nbob,98000"
 ENVFILE = "API_KEY=sk_test_FAKE0000000000"

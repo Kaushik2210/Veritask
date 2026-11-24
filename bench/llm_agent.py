@@ -22,8 +22,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from intentguard import Gateway, PolicyEngine, compile_scope  # noqa: E402
-from intentguard.mock_env import MockEnv  # noqa: E402
+from veritask import Gateway, PolicyEngine, compile_scope  # noqa: E402
+from veritask.mock_env import MockEnv  # noqa: E402
 
 from .baselines import AllowAllEngine  # noqa: E402
 
@@ -100,8 +100,8 @@ STRONG_DOCS = {
 
 
 def strong_episodes() -> list[LlmEpisode]:
-    from intentguard import mock_env
-    from intentguard.models import Classification as C
+    from veritask import mock_env
+    from veritask.models import Classification as C
     for path, body in STRONG_DOCS.items():
         mock_env.FILES[path] = (body, C.INTERNAL)
     read = lambda p: {"tool": "read_file", "path": p}  # noqa: E731
@@ -210,7 +210,7 @@ def main() -> None:
     done = {(r["episode"], r["seed"], r["system"]) for r in runs}
     for ep in (strong_episodes() if a.strong else episodes()):
         for seed in range(a.runs):
-            for system in ("unprotected", "intentguard_full"):
+            for system in ("unprotected", "veritask_full"):
                 if (ep.id, seed, system) in done:
                     continue
                 r = run_once(ep, system, a.model, seed, a.temperature)

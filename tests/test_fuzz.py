@@ -2,7 +2,7 @@
 
 Every run checks the same promises: nothing escapes as an exception, no internal engine error, a tool only runs when the decision is
 ALLOW, the audit chain verifies, risk stays in range, replaying a seed gives identical decisions, a frozen session stays frozen, and an
-independent oracle (tests/fuzz_oracle.py) agrees that every ALLOW respected the policy. Set INTENTGUARD_FUZZ_SEEDS to run more seeds.
+independent oracle (tests/fuzz_oracle.py) agrees that every ALLOW respected the policy. Set VERITASK_FUZZ_SEEDS to run more seeds.
 """
 
 import os
@@ -11,7 +11,7 @@ import pytest
 from fuzz_oracle import frozen_then_allowed, oracle
 from fuzz_support import Run, audit_ok, fingerprint, run_fuzz
 
-SEEDS = int(os.environ.get("INTENTGUARD_FUZZ_SEEDS", "40"))
+SEEDS = int(os.environ.get("VERITASK_FUZZ_SEEDS", "40"))
 STEPS = 120
 
 
@@ -60,7 +60,7 @@ def test_the_fuzzer_actually_reaches_every_verdict_and_runs_tools(runs):
 
 def violating(tool, args, verdict="ALLOW"):
     """A fake record of a decision that broke a promise, built on a real gateway so the oracle has a catalog and grants to use."""
-    from intentguard import compile_scope
+    from veritask import compile_scope
     run = run_fuzz(0, 5)
     run.gateway.open_session("x", "a", compile_scope("Read research/paper.pdf", {"resources": ["*"], "max_classification": "INTERNAL"}))
     run.calls = [("x", tool, args, verdict, 1)]

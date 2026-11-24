@@ -1,6 +1,6 @@
 """Guard your own Python functions in a few lines.
 
-    from intentguard.sdk import Guard
+    from veritask.sdk import Guard
 
     guard = Guard(classes={"hr/salary.csv": "CONFIDENTIAL"}, trust={"bob@x.org": "approved"})
 

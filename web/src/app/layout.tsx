@@ -7,7 +7,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", displ
 const serif = Newsreader({ subsets: ["latin"], style: ["italic", "normal"], variable: "--font-serif", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "IntentGuard: the check between your AI agent and your data",
+  title: "Veritask: the check between your AI agent and your data",
   description:
     "A research prototype that checks every tool call an AI agent makes against what the person actually asked for, before it runs. Replay real decisions, tamper with the audit log, and try to smuggle a secret past it.",
 };
