@@ -8,7 +8,7 @@ import pytest
 
 sync_api = pytest.importorskip("playwright.sync_api")
 DOCS = Path(__file__).resolve().parent.parent / "docs"
-BASE = "http://site.test/IntentGuard/"
+BASE = "http://site.test/Veritask/"
 
 
 @pytest.fixture(scope="module")
@@ -23,13 +23,13 @@ def browser():
 
 
 def open_page(browser, **kw):
-    """Serves docs/ at /IntentGuard/ (the GitHub Pages path) without starting a server."""
+    """Serves docs/ at /Veritask/ (the GitHub Pages path) without starting a server."""
     page = browser.new_page(**{"viewport": {"width": 1280, "height": 800}, **kw})
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
 
     def handler(route):
-        rel = urlparse(route.request.url).path.removeprefix("/IntentGuard").lstrip("/")
+        rel = urlparse(route.request.url).path.removeprefix("/Veritask").lstrip("/")
         f = DOCS / rel if rel else DOCS / "index.html"
         if f.is_dir():
             f = f / "index.html"

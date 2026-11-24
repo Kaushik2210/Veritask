@@ -3,7 +3,7 @@
 Intent-aware and behavioural runtime authorization for autonomous AI agents. Research prototype.
 Paper working title: *Intent-Aware Authorization for AI Agents*.
 
-Formerly named IntentGuard. The GitHub repository and the Pages address still use the old name until the repository is renamed.
+Formerly named IntentGuard; the old GitHub address redirects here.
 
 Every tool call goes through a gateway that decides ALLOW / REVIEW / BLOCK / QUARANTINE using
 deterministic rules over: the user's task scope, resource classification, destination trust,
@@ -90,7 +90,7 @@ bench.semantic_ollama --model qwen2.5:7b --engine`); read F31 for the caveats, i
 
 ## Showcase site
 
-**Live: https://kaushik2210.github.io/IntentGuard/**
+**Live: https://kaushik2210.github.io/Veritask/**
 
 `web/` is a Next.js (App Router, static export) site that shows the prototype: a 3D steel-and-glass gate (three.js) that real engine
 decisions fly through, a replay console that lights up which of the six checks fired, a compose box to try to smuggle a secret past the
@@ -105,7 +105,7 @@ cd web && npm run publish:docs            # build and copy the static site into 
 ```
 
 Everything the site shows comes from that JSON, and a test fails if it no longer matches the engine. To publish, set GitHub Pages to deploy
-from branch `master`, folder `/docs`; the export assumes the URL path `/IntentGuard/` (set `NEXT_BASE_PATH=""` for a custom domain).
+from branch `master`, folder `/docs`; the export assumes the URL path `/Veritask/` (set `NEXT_BASE_PATH=""` for a custom domain).
 
 ## Guard your own Python functions
 

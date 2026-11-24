@@ -24,7 +24,7 @@ from veritask import EngineConfig, Gateway, compile_scope  # noqa: E402
 from veritask.engine import RULE_TEXT  # noqa: E402
 from veritask.mock_env import FILES, MockEnv  # noqa: E402
 
-REPO = "https://github.com/Kaushik2210/IntentGuard"
+REPO = "https://github.com/Kaushik2210/Veritask"
 SNAPSHOT = ROOT / "site" / "results_snapshot.json"
 OUT = ROOT / "web" / "src" / "data" / "site-data.json"
 

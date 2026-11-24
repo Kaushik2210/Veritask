@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
-// The site is a static export served from GitHub Pages at /IntentGuard/. Set NEXT_BASE_PATH="" for a custom domain.
-const basePath = process.env.NEXT_BASE_PATH ?? (process.env.NODE_ENV === "production" ? "/IntentGuard" : "");
+// The site is a static export served from GitHub Pages at /Veritask/. Set NEXT_BASE_PATH="" for a custom domain.
+const basePath = process.env.NEXT_BASE_PATH ?? (process.env.NODE_ENV === "production" ? "/Veritask" : "");
 
 const nextConfig: NextConfig = {
   output: "export",
