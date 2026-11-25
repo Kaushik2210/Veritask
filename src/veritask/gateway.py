@@ -80,7 +80,8 @@ class Catalog:
 
 
 _WRITE_SQL = re.compile(r"\b(drop|delete|truncate|alter|update|insert|create|grant|revoke|merge|attach|detach|pragma|vacuum|"
-                        r"copy|call|exec|execute|load_extension)\b|\binto\s+(outfile|dumpfile)\b|\bload\s+data\b", re.I)
+                        r"copy|call|exec|execute|load_extension|analyze|reindex)\b|\breplace\s+into\b|\binto\s+(outfile|dumpfile)\b|"
+                        r"\bload\s+data\b", re.I)
 
 
 def _argv_words(cmd: str) -> list[str]:
@@ -210,7 +211,7 @@ class Gateway:
             req.tables = self._tables(sql)
             if req.tables:
                 req.classification = max(self.catalog.table_class(t) for t in req.tables)
-            if _WRITE_SQL.search(sql):
+            if _WRITE_SQL.search(sql) or _WRITE_SQL.search(re.sub(r"/\*.*?\*/|--[^\n]*", " ", sql, flags=re.S)):  # also with comments cut out: REPLACE/**/INTO
                 req.op = Op.WRITE  # a statement that changes data, opens another database or runs code is a write, not a query
         try:
             d = self.engine.evaluate(req, s)
@@ -243,10 +244,23 @@ class Gateway:
         WITH. Over-approximate on purpose. Not a SQL parser: dynamic or encoded SQL is not handled."""
         s = re.sub(r"/\*.*?\*/|--[^\n]*|'[^']*'", " ", sql, flags=re.S)
         s = re.sub(r"[`\"\[\]]", "", s)
+        s = re.sub(r"\s*\.\s*", ".", s)  # SQLite allows spaces around the dot: main . salaries
         found = []
         for m in re.finditer(r"\b(?:from|join|into|update|table)\s+([\w.]+(?:\s*,\s*[\w.]+)*)", s, re.I):
             found += [x.strip().rsplit(".", 1)[-1] for x in m.group(1).split(",")]
         found += [t for t in re.findall(r"[A-Za-z_]\w*", s) if t.lower() in self.catalog.tables]
+        # SQLite also reads FROM 'salaries' (a single-quoted name) as the table. A quoted string counts as a table when the last
+        # clause keyword before it is FROM, JOIN, INTO, UPDATE or TABLE (so also after an alias and a comma), and its text is a
+        # name the catalog knows. After WHERE, SELECT or VALUES it is an ordinary string and is not mistaken for a table.
+        clause = ""
+        for m in re.finditer(r"'((?:[^']|'')*)'|\b(select|from|join|where|on|group|order|having|limit|values|set|union|into|update|table)\b",
+                             re.sub(r"/\*.*?\*/|--[^\n]*", " ", sql, flags=re.S), re.I):
+            if m.group(2):
+                clause = m.group(2).lower()
+            elif clause in ("from", "join", "into", "update", "table"):
+                name = m.group(1).replace("''", "'").strip().rsplit(".", 1)[-1]
+                if name.lower() in self.catalog.tables:
+                    found.append(name)
         return list(dict.fromkeys(f for f in found if f and f.lower() not in ("select", "values")))
 
     def approve(self, action_id: str, approver: str) -> Any:

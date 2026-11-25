@@ -990,3 +990,34 @@ paths are refused even where a Windows caller might legitimately use them for lo
 test against real file systems, and the macOS "ignorable code points" behaviour belongs to old HFS+ and not to current APFS, so that class may be theoretical. The model does
 not cover symbolic links, hard links, mount points, 8.3 short names (refused, not resolved) or tool-specific parsing. The test suite runs 800 trials per kind (about
 1 second); `VERITASK_MUTATION_TRIALS=20000` reproduces the large run (about 15 seconds).
+
+## F38. Fuzzing SQL against SQLite itself found two more bypasses
+
+F37's oracle was a model I wrote. For SQL there is a better one that nobody wrote for this project: SQLite's own parser. While it prepares a statement it calls an
+authorizer with every table it will read and every kind of change it will make (`tests/fuzz_sql.py`, `tests/test_sql_fuzz.py`). The fuzzer takes statements that read a
+sensitive table or change data, applies one to three spelling tricks that SQLite accepts (case, comments and odd whitespace between words, `"x"`, `[x]`, `` `x` ``,
+`'x'`, `main.x`, `main . x`, aliases, parentheses, CTE and subquery wraps, a trailing or leading statement), asks SQLite whether the result still reaches a sensitive
+table or changes anything, and counts a bypass when the gateway ALLOWED it for a task that may only read the public `papers` table.
+
+**Found** (before the fix, 18 distinct combinations of statement and trick were allowed):
+
+| Root cause | Example | Why SQLite reads it |
+|---|---|---|
+| a single-quoted table name | `SELECT * FROM 'salaries'` | SQLite accepts a string where a table name goes, and the gateway had stripped every quoted string as a literal |
+| `REPLACE INTO` was not on the write list | `REPLACE INTO papers VALUES (1,'a',2)` | it is `INSERT OR REPLACE`; only the `replace()` string function was meant to be allowed |
+| a comment or odd whitespace between the words of a write | `REPLACE /* x */ INTO papers ...` | comments are whitespace to SQLite |
+| spaces around the schema dot | `FROM main . 'users'` | SQLite allows `main . users` |
+
+`ANALYZE` and `REINDEX` also change SQLite's internal tables and were added to the write list while there.
+
+**Fixed** (`src/veritask/gateway.py`): a quoted string counts as a table when the last clause keyword before it is FROM, JOIN, INTO, UPDATE or TABLE and its text is a table
+the catalog knows (so `WHERE note = 'users'` is still an ordinary string, as `test_hardening.py` requires); write detection also runs on the statement with comments cut
+out; spaces around the dot are removed before table names are read; `replace into`, `analyze` and `reindex` are writes. After the fix: **0 bypasses in 40,000 trials of each
+kind**, and no benchmark number changed.
+
+**Costs.** A statement that contains the words `analyze`, `reindex` or `replace into` anywhere, including inside a string literal, is now a write for a read-only task.
+
+**Limits.** The mutations are the ones I thought of. The oracle is SQLite only: another database (PostgreSQL, MySQL) reads other spellings, such as `E'...'` strings,
+dollar quoting, backslash escapes and `LATERAL`, which this does not test. Views and triggers that read other tables, `PRAGMA` functions, `ATTACH`ed databases and
+dynamic or encoded SQL are not handled (F33 lists them). The suite runs 1,500 trials per kind (about 2 seconds); `VERITASK_SQL_TRIALS=40000` reproduces the large run
+(about 35 seconds).
